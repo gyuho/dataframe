@@ -17,12 +17,12 @@ type Column interface {
 	PopFront() (Value, bool)
 	PopBack() (Value, bool)
 
-	ByStringAscending()
-	ByStringDescending()
-	ByNumberAscending()
-	ByNumberDescending()
-	ByDurationAscending()
-	ByDurationDescending()
+	SortByStringAscending()
+	SortByStringDescending()
+	SortByNumberAscending()
+	SortByNumberDescending()
+	SortByDurationAscending()
+	SortByDurationDescending()
 }
 
 type column struct {
@@ -117,21 +117,21 @@ func (c *column) PopBack() (Value, bool) {
 	return v, true
 }
 
-func (c *column) ByStringAscending() {
+func (c *column) SortByStringAscending() {
 	sort.Sort(ByStringAscending(c.data))
 }
-func (c *column) ByStringDescending() {
+func (c *column) SortByStringDescending() {
 	sort.Sort(ByStringDescending(c.data))
 }
-func (c *column) ByNumberAscending() {
+func (c *column) SortByNumberAscending() {
 	sort.Sort(ByNumberAscending(c.data))
 }
-func (c *column) ByNumberDescending() {
+func (c *column) SortByNumberDescending() {
 	sort.Sort(ByNumberDescending(c.data))
 }
-func (c *column) ByDurationAscending() {
+func (c *column) SortByDurationAscending() {
 	sort.Sort(ByDurationAscending(c.data))
 }
-func (c *column) ByDurationDescending() {
+func (c *column) SortByDurationDescending() {
 	sort.Sort(ByDurationDescending(c.data))
 }

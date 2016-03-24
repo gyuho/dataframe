@@ -44,12 +44,12 @@ func TestColumn(t *testing.T) {
 	}
 }
 
-func TestColumnByStringAscending(t *testing.T) {
+func TestColumnSortByStringAscending(t *testing.T) {
 	c := NewColumn("column")
 	for i := 0; i < 100; i++ {
 		c.PushBack(NewValue(fmt.Sprintf("%d", i)))
 	}
-	c.ByStringAscending()
+	c.SortByStringAscending()
 	fv, err := c.GetValue(0)
 	if err != nil {
 		t.Fatal(err)
@@ -59,12 +59,12 @@ func TestColumnByStringAscending(t *testing.T) {
 	}
 }
 
-func TestColumnByStringDescending(t *testing.T) {
+func TestColumnSortByStringDescending(t *testing.T) {
 	c := NewColumn("column")
 	for i := 0; i < 100; i++ {
 		c.PushBack(NewValue(fmt.Sprintf("%d", i)))
 	}
-	c.ByStringDescending()
+	c.SortByStringDescending()
 	fv, err := c.GetValue(0)
 	if err != nil {
 		t.Fatal(err)
@@ -74,12 +74,12 @@ func TestColumnByStringDescending(t *testing.T) {
 	}
 }
 
-func TestColumnByNumberAscending(t *testing.T) {
+func TestColumnSortByNumberAscending(t *testing.T) {
 	c := NewColumn("column")
 	for i := 0; i < 100; i++ {
 		c.PushBack(NewValue(fmt.Sprintf("%d", i)))
 	}
-	c.ByNumberAscending()
+	c.SortByNumberAscending()
 	fv, err := c.GetValue(0)
 	if err != nil {
 		t.Fatal(err)
@@ -89,13 +89,13 @@ func TestColumnByNumberAscending(t *testing.T) {
 	}
 }
 
-func TestColumnByNumberDescending(t *testing.T) {
+func TestColumnSortByNumberDescending(t *testing.T) {
 	c := NewColumn("column")
 	for i := 0; i < 100; i++ {
 		c.PushBack(NewValue(fmt.Sprintf("%d", i)))
 	}
 	c.PushBack(NewValue("199.9"))
-	c.ByNumberDescending()
+	c.SortByNumberDescending()
 	fv, err := c.GetValue(0)
 	if err != nil {
 		t.Fatal(err)
@@ -105,12 +105,12 @@ func TestColumnByNumberDescending(t *testing.T) {
 	}
 }
 
-func TestColumnByDurationAscending(t *testing.T) {
+func TestColumnSortByDurationAscending(t *testing.T) {
 	c := NewColumn("column")
 	for i := 0; i < 100; i++ {
 		c.PushBack(NewValue(fmt.Sprintf("%s", time.Duration(i)*time.Second)))
 	}
-	c.ByDurationAscending()
+	c.SortByDurationAscending()
 	fv, err := c.GetValue(0)
 	if err != nil {
 		t.Fatal(err)
@@ -120,13 +120,13 @@ func TestColumnByDurationAscending(t *testing.T) {
 	}
 }
 
-func TestColumnByDurationDescending(t *testing.T) {
+func TestColumnSortByDurationDescending(t *testing.T) {
 	c := NewColumn("column")
 	for i := 0; i < 100; i++ {
 		c.PushBack(NewValue(fmt.Sprintf("%s", time.Duration(i)*time.Second)))
 	}
 	c.PushBack(NewValue("200h"))
-	c.ByDurationDescending()
+	c.SortByDurationDescending()
 	fv, err := c.GetValue(0)
 	if err != nil {
 		t.Fatal(err)
