@@ -15,6 +15,8 @@ type Frame interface {
 	GetColumnNumber() int
 	DeleteColumn(header string) bool
 	ToCSV(fpath string) error
+	ToRows() ([]string, [][]string)
+	Sort(header string, st SortType, so SortOption) error
 }
 
 type frame struct {
@@ -30,26 +32,10 @@ func New() Frame {
 	}
 }
 
-func NewFromCSV(header []string, fpath string) (Frame, error) {
-	f, err := os.OpenFile(fpath, os.O_RDONLY, 0444)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	rd := csv.NewReader(f)
-
-	// TODO: make this configurable
-	rd.FieldsPerRecord = -1
-
-	rows, err := rd.ReadAll()
-	if err != nil {
-		return nil, err
-	}
+func NewFromRows(header []string, rows [][]string) (Frame, error) {
 	if len(rows) < 1 {
-		return nil, fmt.Errorf("empty file %s", fpath)
+		return nil, fmt.Errorf("empty row %q", rows)
 	}
-
 	fr := New()
 	headerN := len(header)
 	if headerN > 0 { // use this as header
@@ -112,55 +98,24 @@ func NewFromCSV(header []string, fpath string) (Frame, error) {
 	return fr, nil
 }
 
-func (f *frame) ToCSV(fpath string) error {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	fi, err := os.OpenFile(fpath, os.O_RDWR|os.O_TRUNC, 0777)
+func NewFromCSV(header []string, fpath string) (Frame, error) {
+	f, err := os.OpenFile(fpath, os.O_RDONLY, 0444)
 	if err != nil {
-		fi, err = os.Create(fpath)
-		if err != nil {
-			return err
-		}
+		return nil, err
 	}
-	defer fi.Close()
+	defer f.Close()
 
-	wr := csv.NewWriter(fi)
+	rd := csv.NewReader(f)
 
-	header := make([]string, len(f.headerTo))
-	for k, v := range f.headerTo {
-		header[v] = k
-	}
-	if err := wr.Write(header); err != nil {
-		return err
+	// TODO: make this configurable
+	rd.FieldsPerRecord = -1
+
+	rows, err := rd.ReadAll()
+	if err != nil {
+		return nil, err
 	}
 
-	var rowN uint64
-	for _, col := range f.columns {
-		n := col.GetSize()
-		if rowN < n {
-			rowN = n
-		}
-	}
-
-	rows := make([][]string, rowN)
-	colN := len(f.columns)
-	for rowIdx := uint64(0); rowIdx < rowN; rowIdx++ {
-		row := make([]string, colN)
-		for colIdx, col := range f.columns { // rowIdx * colIdx
-			v, _ := col.GetValue(rowIdx)
-			elem, _ := v.ToString()
-			row[colIdx] = elem
-		}
-		rows[rowIdx] = row
-	}
-
-	if err := wr.WriteAll(rows); err != nil {
-		return err
-	}
-
-	wr.Flush()
-	return wr.Error()
+	return NewFromRows(header, rows)
 }
 
 func (f *frame) GetHeader() []string {
@@ -223,4 +178,118 @@ func (f *frame) DeleteColumn(header string) bool {
 		f.headerTo[c.GetHeader()] = i
 	}
 	return true
+}
+
+func (f *frame) ToRows() ([]string, [][]string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	headers := make([]string, len(f.headerTo))
+	for k, v := range f.headerTo {
+		headers[v] = k
+	}
+
+	var rowN int
+	for _, col := range f.columns {
+		n := col.Len()
+		if rowN < n {
+			rowN = n
+		}
+	}
+
+	rows := make([][]string, rowN)
+	colN := len(f.columns)
+	for rowIdx := 0; rowIdx < rowN; rowIdx++ {
+		row := make([]string, colN)
+		for colIdx, col := range f.columns { // rowIdx * colIdx
+			v, _ := col.GetValue(rowIdx)
+			elem, _ := v.ToString()
+			row[colIdx] = elem
+		}
+		rows[rowIdx] = row
+	}
+
+	return headers, rows
+}
+
+func (f *frame) ToCSV(fpath string) error {
+	fi, err := os.OpenFile(fpath, os.O_RDWR|os.O_TRUNC, 0777)
+	if err != nil {
+		fi, err = os.Create(fpath)
+		if err != nil {
+			return err
+		}
+	}
+	defer fi.Close()
+
+	wr := csv.NewWriter(fi)
+
+	headers, rows := f.ToRows()
+	if err := wr.Write(headers); err != nil {
+		return err
+	}
+	if err := wr.WriteAll(rows); err != nil {
+		return err
+	}
+
+	wr.Flush()
+	return wr.Error()
+}
+
+func (f *frame) Sort(header string, st SortType, so SortOption) error {
+	f.mu.Lock()
+	idx, ok := f.headerTo[header]
+	if !ok {
+		f.mu.Unlock()
+		return fmt.Errorf("%q does not exist", header)
+	}
+	f.mu.Unlock()
+
+	var lesses []LessFunc
+	switch st {
+	case SortType_String:
+		switch so {
+		case SortOption_Ascending:
+			lesses = []LessFunc{MakeStringAscendingFunc(idx)}
+
+		case SortOption_Descending:
+			lesses = []LessFunc{MakeStringDescendingFunc(idx)}
+		}
+
+	case SortType_Number:
+		switch so {
+		case SortOption_Ascending:
+			lesses = []LessFunc{MakeNumberAscendingFunc(idx)}
+
+		case SortOption_Descending:
+			lesses = []LessFunc{MakeNumberDescendingFunc(idx)}
+		}
+
+	case SortType_Duration:
+		switch so {
+		case SortOption_Ascending:
+			lesses = []LessFunc{MakeDurationAscendingFunc(idx)}
+
+		case SortOption_Descending:
+			lesses = []LessFunc{MakeDurationDescendingFunc(idx)}
+		}
+	}
+
+	headers, rows := f.ToRows()
+	// sort by idx
+	SortBy(
+		rows,
+		lesses...,
+	).Sort(rows)
+
+	nf, err := NewFromRows(headers, rows)
+	if err != nil {
+		return err
+	}
+	v, ok := nf.(*frame)
+	if !ok {
+		return fmt.Errorf("cannot type assert on frame")
+	}
+	*f = *v
+	return nil
 }

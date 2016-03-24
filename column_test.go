@@ -3,6 +3,7 @@ package dataframe
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestColumn(t *testing.T) {
@@ -12,12 +13,12 @@ func TestColumn(t *testing.T) {
 	}
 	for i := 0; i < 100; i++ {
 		d := c.PushBack(NewValue(fmt.Sprintf("%d", i)))
-		if uint64(i+1) != d {
+		if i+1 != d {
 			t.Fatalf("expected %d, got %d", i+1, d)
 		}
 	}
-	if c.GetSize() != 100 {
-		t.Fatalf("expected '100', got %v", c.GetSize())
+	if c.Len() != 100 {
+		t.Fatalf("expected '100', got %v", c.Len())
 	}
 	if v, err := c.GetValue(10); err != nil || !v.EqualTo(NewValue(fmt.Sprintf("%d", 10))) {
 		t.Fatalf("expected '10', got %v(%v)", v, err)
@@ -40,5 +41,97 @@ func TestColumn(t *testing.T) {
 	}
 	if vv, ok := c.PopFront(); !ok || !vv.EqualTo(NewValue("A")) {
 		t.Fatalf("expected 'A', got %v", vv)
+	}
+}
+
+func TestColumnByStringAscending(t *testing.T) {
+	c := NewColumn("column")
+	for i := 0; i < 100; i++ {
+		c.PushBack(NewValue(fmt.Sprintf("%d", i)))
+	}
+	c.ByStringAscending()
+	fv, err := c.GetValue(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !fv.EqualTo(NewValue("0")) {
+		t.Fatalf("expected '0', got %v", fv)
+	}
+}
+
+func TestColumnByStringDescending(t *testing.T) {
+	c := NewColumn("column")
+	for i := 0; i < 100; i++ {
+		c.PushBack(NewValue(fmt.Sprintf("%d", i)))
+	}
+	c.ByStringDescending()
+	fv, err := c.GetValue(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !fv.EqualTo(NewValue("99")) {
+		t.Fatalf("expected '99', got %v", fv)
+	}
+}
+
+func TestColumnByNumberAscending(t *testing.T) {
+	c := NewColumn("column")
+	for i := 0; i < 100; i++ {
+		c.PushBack(NewValue(fmt.Sprintf("%d", i)))
+	}
+	c.ByNumberAscending()
+	fv, err := c.GetValue(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !fv.EqualTo(NewValue("0")) {
+		t.Fatalf("expected '0', got %v", fv)
+	}
+}
+
+func TestColumnByNumberDescending(t *testing.T) {
+	c := NewColumn("column")
+	for i := 0; i < 100; i++ {
+		c.PushBack(NewValue(fmt.Sprintf("%d", i)))
+	}
+	c.PushBack(NewValue("199.9"))
+	c.ByNumberDescending()
+	fv, err := c.GetValue(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !fv.EqualTo(NewValue("199.9")) {
+		t.Fatalf("expected '199.9', got %v", fv)
+	}
+}
+
+func TestColumnByDurationAscending(t *testing.T) {
+	c := NewColumn("column")
+	for i := 0; i < 100; i++ {
+		c.PushBack(NewValue(fmt.Sprintf("%s", time.Duration(i)*time.Second)))
+	}
+	c.ByDurationAscending()
+	fv, err := c.GetValue(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !fv.EqualTo(NewValue("0")) {
+		t.Fatalf("expected '0', got %v", fv)
+	}
+}
+
+func TestColumnByDurationDescending(t *testing.T) {
+	c := NewColumn("column")
+	for i := 0; i < 100; i++ {
+		c.PushBack(NewValue(fmt.Sprintf("%s", time.Duration(i)*time.Second)))
+	}
+	c.PushBack(NewValue("200h"))
+	c.ByDurationDescending()
+	fv, err := c.GetValue(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !fv.EqualTo(NewValue("200h")) {
+		t.Fatalf("expected '200h', got %v", fv)
 	}
 }
