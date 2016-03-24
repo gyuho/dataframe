@@ -9,11 +9,18 @@ import (
 // Column represents column-based data.
 type Column interface {
 	Len() int
+
 	GetHeader() string
 	GetValue(row int) (Value, error)
+
+	Front() (Value, bool)
+	Back() (Value, bool)
+
 	PushFront(v Value) int
 	PushBack(v Value) int
+
 	DeleteRow(row int) (Value, error)
+
 	PopFront() (Value, bool)
 	PopBack() (Value, bool)
 
@@ -59,6 +66,26 @@ func (c *column) GetValue(row int) (Value, error) {
 		return nil, fmt.Errorf("index out of range (got %d for size %d)", row, c.size)
 	}
 	return c.data[row], nil
+}
+
+func (c *column) Front() (Value, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.size == 0 {
+		return nil, false
+	}
+	v := c.data[0]
+	return v, true
+}
+
+func (c *column) Back() (Value, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.size == 0 {
+		return nil, false
+	}
+	v := c.data[c.size-1]
+	return v, true
 }
 
 func (c *column) PushFront(v Value) int {
@@ -117,21 +144,9 @@ func (c *column) PopBack() (Value, bool) {
 	return v, true
 }
 
-func (c *column) SortByStringAscending() {
-	sort.Sort(ByStringAscending(c.data))
-}
-func (c *column) SortByStringDescending() {
-	sort.Sort(ByStringDescending(c.data))
-}
-func (c *column) SortByNumberAscending() {
-	sort.Sort(ByNumberAscending(c.data))
-}
-func (c *column) SortByNumberDescending() {
-	sort.Sort(ByNumberDescending(c.data))
-}
-func (c *column) SortByDurationAscending() {
-	sort.Sort(ByDurationAscending(c.data))
-}
-func (c *column) SortByDurationDescending() {
-	sort.Sort(ByDurationDescending(c.data))
-}
+func (c *column) SortByStringAscending()    { sort.Sort(ByStringAscending(c.data)) }
+func (c *column) SortByStringDescending()   { sort.Sort(ByStringDescending(c.data)) }
+func (c *column) SortByNumberAscending()    { sort.Sort(ByNumberAscending(c.data)) }
+func (c *column) SortByNumberDescending()   { sort.Sort(ByNumberDescending(c.data)) }
+func (c *column) SortByDurationAscending()  { sort.Sort(ByDurationAscending(c.data)) }
+func (c *column) SortByDurationDescending() { sort.Sort(ByDurationDescending(c.data)) }

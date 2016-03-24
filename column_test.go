@@ -23,11 +23,19 @@ func TestColumn(t *testing.T) {
 	if v, err := c.GetValue(10); err != nil || !v.EqualTo(NewValue(fmt.Sprintf("%d", 10))) {
 		t.Fatalf("expected '10', got %v(%v)", v, err)
 	}
-	bv, ok := c.PopBack()
+	bv, ok := c.Back()
 	if !ok || !bv.EqualTo(NewValue(fmt.Sprintf("%d", 99))) {
 		t.Fatalf("expected '99', got %v", bv)
 	}
-	fv, ok := c.PopFront()
+	bv, ok = c.PopBack()
+	if !ok || !bv.EqualTo(NewValue(fmt.Sprintf("%d", 99))) {
+		t.Fatalf("expected '99', got %v", bv)
+	}
+	fv, ok := c.Front()
+	if !ok || !fv.EqualTo(NewValue(fmt.Sprintf("%d", 0))) {
+		t.Fatalf("expected '0', got %v", fv)
+	}
+	fv, ok = c.PopFront()
 	if !ok || !fv.EqualTo(NewValue(fmt.Sprintf("%d", 0))) {
 		t.Fatalf("expected '0', got %v", fv)
 	}
