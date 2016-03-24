@@ -2,25 +2,33 @@ package dataframe
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 )
 
 // Column represents column-based data.
 type Column interface {
+	Len() int
 	GetHeader() string
-	GetSize() uint64
-	GetValue(row uint64) (Value, error)
-	PushFront(v Value) uint64
-	PushBack(v Value) uint64
-	DeleteRow(row uint64) (Value, error)
+	GetValue(row int) (Value, error)
+	PushFront(v Value) int
+	PushBack(v Value) int
+	DeleteRow(row int) (Value, error)
 	PopFront() (Value, bool)
 	PopBack() (Value, bool)
+
+	ByStringAscending()
+	ByStringDescending()
+	ByNumberAscending()
+	ByNumberDescending()
+	ByDurationAscending()
+	ByDurationDescending()
 }
 
 type column struct {
 	mu     sync.Mutex
 	header string
-	size   uint64
+	size   int
 	data   []Value
 }
 
@@ -32,19 +40,19 @@ func NewColumn(hd string) Column {
 	}
 }
 
+func (c *column) Len() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.size
+}
+
 func (c *column) GetHeader() string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.header
 }
 
-func (c *column) GetSize() uint64 {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	return c.size
-}
-
-func (c *column) GetValue(row uint64) (Value, error) {
+func (c *column) GetValue(row int) (Value, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if row > c.size-1 {
@@ -53,7 +61,7 @@ func (c *column) GetValue(row uint64) (Value, error) {
 	return c.data[row], nil
 }
 
-func (c *column) PushFront(v Value) uint64 {
+func (c *column) PushFront(v Value) int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	temp := make([]Value, c.size+1)
@@ -64,7 +72,7 @@ func (c *column) PushFront(v Value) uint64 {
 	return c.size
 }
 
-func (c *column) PushBack(v Value) uint64 {
+func (c *column) PushBack(v Value) int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.data = append(c.data, v)
@@ -72,7 +80,7 @@ func (c *column) PushBack(v Value) uint64 {
 	return c.size
 }
 
-func (c *column) DeleteRow(row uint64) (Value, error) {
+func (c *column) DeleteRow(row int) (Value, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if row > c.size-1 {
@@ -107,4 +115,23 @@ func (c *column) PopBack() (Value, bool) {
 	c.data = c.data[:len(c.data)-1 : len(c.data)-1]
 	c.size--
 	return v, true
+}
+
+func (c *column) ByStringAscending() {
+	sort.Sort(ByStringAscending(c.data))
+}
+func (c *column) ByStringDescending() {
+	sort.Sort(ByStringDescending(c.data))
+}
+func (c *column) ByNumberAscending() {
+	sort.Sort(ByNumberAscending(c.data))
+}
+func (c *column) ByNumberDescending() {
+	sort.Sort(ByNumberDescending(c.data))
+}
+func (c *column) ByDurationAscending() {
+	sort.Sort(ByDurationAscending(c.data))
+}
+func (c *column) ByDurationDescending() {
+	sort.Sort(ByDurationDescending(c.data))
 }
