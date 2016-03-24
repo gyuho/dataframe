@@ -250,28 +250,28 @@ func (f *frame) Sort(header string, st SortType, so SortOption) error {
 	case SortType_String:
 		switch so {
 		case SortOption_Ascending:
-			lesses = []LessFunc{MakeStringAscendingFunc(idx)}
+			lesses = []LessFunc{StringAscendingFunc(idx)}
 
 		case SortOption_Descending:
-			lesses = []LessFunc{MakeStringDescendingFunc(idx)}
+			lesses = []LessFunc{StringDescendingFunc(idx)}
 		}
 
 	case SortType_Number:
 		switch so {
 		case SortOption_Ascending:
-			lesses = []LessFunc{MakeNumberAscendingFunc(idx)}
+			lesses = []LessFunc{NumberAscendingFunc(idx)}
 
 		case SortOption_Descending:
-			lesses = []LessFunc{MakeNumberDescendingFunc(idx)}
+			lesses = []LessFunc{NumberDescendingFunc(idx)}
 		}
 
 	case SortType_Duration:
 		switch so {
 		case SortOption_Ascending:
-			lesses = []LessFunc{MakeDurationAscendingFunc(idx)}
+			lesses = []LessFunc{DurationAscendingFunc(idx)}
 
 		case SortOption_Descending:
-			lesses = []LessFunc{MakeDurationDescendingFunc(idx)}
+			lesses = []LessFunc{DurationDescendingFunc(idx)}
 		}
 	}
 

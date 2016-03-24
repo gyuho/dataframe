@@ -33,19 +33,19 @@ func SortBy(rows [][]string, lesses ...LessFunc) *MultiSorter {
 // LessFunc compares between two string slices.
 type LessFunc func(p1, p2 *[]string) bool
 
-func MakeStringAscendingFunc(idx int) func(row1, row2 *[]string) bool {
+func StringAscendingFunc(idx int) func(row1, row2 *[]string) bool {
 	return func(row1, row2 *[]string) bool {
 		return (*row1)[idx] < (*row2)[idx]
 	}
 }
 
-func MakeStringDescendingFunc(idx int) func(row1, row2 *[]string) bool {
+func StringDescendingFunc(idx int) func(row1, row2 *[]string) bool {
 	return func(row1, row2 *[]string) bool {
 		return (*row1)[idx] > (*row2)[idx]
 	}
 }
 
-func MakeNumberAscendingFunc(idx int) func(row1, row2 *[]string) bool {
+func NumberAscendingFunc(idx int) func(row1, row2 *[]string) bool {
 	return func(row1, row2 *[]string) bool {
 		v1s := (*row1)[idx]
 		v1, _ := strconv.ParseFloat(v1s, 64)
@@ -55,7 +55,7 @@ func MakeNumberAscendingFunc(idx int) func(row1, row2 *[]string) bool {
 	}
 }
 
-func MakeNumberDescendingFunc(idx int) func(row1, row2 *[]string) bool {
+func NumberDescendingFunc(idx int) func(row1, row2 *[]string) bool {
 	return func(row1, row2 *[]string) bool {
 		v1s := (*row1)[idx]
 		v1, _ := strconv.ParseFloat(v1s, 64)
@@ -65,7 +65,7 @@ func MakeNumberDescendingFunc(idx int) func(row1, row2 *[]string) bool {
 	}
 }
 
-func MakeDurationAscendingFunc(idx int) func(row1, row2 *[]string) bool {
+func DurationAscendingFunc(idx int) func(row1, row2 *[]string) bool {
 	return func(row1, row2 *[]string) bool {
 		v1s := (*row1)[idx]
 		v1, _ := time.ParseDuration(v1s)
@@ -75,7 +75,7 @@ func MakeDurationAscendingFunc(idx int) func(row1, row2 *[]string) bool {
 	}
 }
 
-func MakeDurationDescendingFunc(idx int) func(row1, row2 *[]string) bool {
+func DurationDescendingFunc(idx int) func(row1, row2 *[]string) bool {
 	return func(row1, row2 *[]string) bool {
 		v1s := (*row1)[idx]
 		v1, _ := time.ParseDuration(v1s)
