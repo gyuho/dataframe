@@ -2,6 +2,8 @@ package dataframe
 
 import (
 	"fmt"
+	"os"
+	"reflect"
 	"testing"
 )
 
@@ -79,10 +81,13 @@ func TestFrame(t *testing.T) {
 	if c, err := fr.GetColumn("second2"); c == nil || err != nil {
 		t.Fatal(err)
 	}
+	if hs := fr.GetHeader(); !reflect.DeepEqual(hs, []string{"second1", "second2"}) {
+		t.Fatalf("expected equal, got %q != %q", hs, []string{"second1", "second2"})
+	}
 	if ok := fr.DeleteColumn("second1"); !ok {
 		t.Fatalf("expected 'true', got %v", ok)
 	}
-	if cd := fr.GetColumnSize(); cd != 1 {
+	if cd := fr.GetColumnNumber(); cd != 1 {
 		t.Fatalf("expected 1, got %v", cd)
 	}
 	if ok := fr.DeleteColumn("second1"); ok {
@@ -94,7 +99,75 @@ func TestFrame(t *testing.T) {
 	if ok := fr.DeleteColumn("second2"); !ok {
 		t.Fatalf("expected 'true', got %v", ok)
 	}
-	if cd := fr.GetColumnSize(); cd != 0 {
+	if cd := fr.GetColumnNumber(); cd != 0 {
 		t.Fatalf("expected 0, got %v", cd)
+	}
+}
+
+func TestNewFrameFromCSV(t *testing.T) {
+	if _, err := NewFrameFromCSV([]string{"second"}, "testdata/bench-compared.csv"); err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	fr, err := NewFrameFromCSV(nil, "testdata/bench-compared.csv")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cols := []string{"second", "avg_latency_ms_consul", "throughput_consul", "avg_cpu_consul", "avg_memory_mb_consul", "avg_latency_ms_etcd", "throughput_etcd", "avg_cpu_etcd", "avg_memory_mb_etcd", "avg_latency_ms_etcd2", "throughput_etcd2", "avg_cpu_etcd2", "avg_memory_mb_etcd2", "avg_latency_ms_zk", "throughput_zk", "avg_cpu_zk", "avg_memory_mb_zk"}
+	if !reflect.DeepEqual(fr.GetHeader(), cols) {
+		t.Fatalf("expected %q, got %q", cols, fr.GetHeader())
+	}
+	ac, err := fr.GetColumn("avg_latency_ms_etcd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v, err := ac.GetValue(77); !v.IsNil() || err != nil {
+		t.Fatalf("expected <nil, nil>, got <%v, %v>", v.IsNil(), err)
+	}
+	if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewValue("51.607760")) || err != nil {
+		t.Fatalf("expected <nil, nil>, got <%v, %v>", v, err)
+	}
+	ac2, err := fr.GetColumn("avg_latency_ms_etcd2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ac.GetSize() != ac2.GetSize() {
+		t.Fatalf("expected equal %v != %v", ac.GetSize(), ac2.GetSize())
+	}
+
+	fpath := "test.csv"
+	if err := fr.ToCSV(fpath); err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(fpath)
+
+	{
+		if _, err := NewFrameFromCSV([]string{"second"}, fpath); err == nil {
+			t.Fatal("expected error, got nil")
+		}
+		fr, err := NewFrameFromCSV(nil, fpath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		cols := []string{"second", "avg_latency_ms_consul", "throughput_consul", "avg_cpu_consul", "avg_memory_mb_consul", "avg_latency_ms_etcd", "throughput_etcd", "avg_cpu_etcd", "avg_memory_mb_etcd", "avg_latency_ms_etcd2", "throughput_etcd2", "avg_cpu_etcd2", "avg_memory_mb_etcd2", "avg_latency_ms_zk", "throughput_zk", "avg_cpu_zk", "avg_memory_mb_zk"}
+		if !reflect.DeepEqual(fr.GetHeader(), cols) {
+			t.Fatalf("expected %q, got %q", cols, fr.GetHeader())
+		}
+		ac, err := fr.GetColumn("avg_latency_ms_etcd")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if v, err := ac.GetValue(77); !v.IsNil() || err != nil {
+			t.Fatalf("expected <nil, nil>, got <%v, %v>", v.IsNil(), err)
+		}
+		if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewValue("51.607760")) || err != nil {
+			t.Fatalf("expected <nil, nil>, got <%v, %v>", v, err)
+		}
+		ac2, err := fr.GetColumn("avg_latency_ms_etcd2")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if ac.GetSize() != ac2.GetSize() {
+			t.Fatalf("expected equal %v != %v", ac.GetSize(), ac2.GetSize())
+		}
 	}
 }

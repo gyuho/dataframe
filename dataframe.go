@@ -1,7 +1,9 @@
 package dataframe
 
 import (
+	"encoding/csv"
 	"fmt"
+	"os"
 	"sync"
 )
 
@@ -111,10 +113,12 @@ func (c *column) PopBack() (Value, bool) {
 
 // Frame contains data.
 type Frame interface {
+	GetHeader() []string
 	AddColumn(c Column) error
 	GetColumn(header string) (Column, error)
-	GetColumnSize() int
+	GetColumnNumber() int
 	DeleteColumn(header string) bool
+	ToCSV(fpath string) error
 }
 
 type frame struct {
@@ -128,6 +132,149 @@ func NewFrame() Frame {
 		columns:  []Column{},
 		headerTo: make(map[string]int),
 	}
+}
+
+func NewFrameFromCSV(header []string, fpath string) (Frame, error) {
+	f, err := os.OpenFile(fpath, os.O_RDONLY, 0444)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	rd := csv.NewReader(f)
+
+	// TODO: make this configurable
+	rd.FieldsPerRecord = -1
+
+	rows, err := rd.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+	if len(rows) < 1 {
+		return nil, fmt.Errorf("empty file %s", fpath)
+	}
+
+	fr := NewFrame()
+	headerN := len(header)
+	if headerN > 0 { // use this as header
+		// assume no header string at top
+		cols := make([]Column, headerN)
+		for i := range cols {
+			cols[i] = NewColumn(header[i])
+		}
+		for _, row := range rows {
+			rowN := len(row)
+			if rowN > headerN {
+				return nil, fmt.Errorf("header %q is not specified correctly for %q", header, row)
+			}
+			for j, v := range row {
+				cols[j].PushBack(NewValue(v))
+			}
+			if rowN < headerN { // fill in empty values
+				for k := rowN; k < headerN; k++ {
+					cols[k].PushBack(NewValue(""))
+				}
+			}
+		}
+		for _, c := range cols {
+			if err := fr.AddColumn(c); err != nil {
+				return nil, err
+			}
+		}
+		return fr, nil
+	}
+	// use first row as header
+	// assume header string at top
+	header = rows[0]
+	headerN = len(header)
+	cols := make([]Column, headerN)
+	for i := range cols {
+		cols[i] = NewColumn(header[i])
+	}
+	for i, row := range rows {
+		if i == 0 {
+			continue
+		}
+		rowN := len(row)
+		if rowN > headerN {
+			return nil, fmt.Errorf("header %q is not specified correctly for %q", header, row)
+		}
+		for j, v := range row {
+			cols[j].PushBack(NewValue(v))
+		}
+		if rowN < headerN { // fill in empty values
+			for k := rowN; k < headerN; k++ {
+				cols[k].PushBack(NewValue(""))
+			}
+		}
+	}
+	for _, c := range cols {
+		if err := fr.AddColumn(c); err != nil {
+			return nil, err
+		}
+	}
+	return fr, nil
+}
+
+func (f *frame) ToCSV(fpath string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	fi, err := os.OpenFile(fpath, os.O_RDWR|os.O_TRUNC, 0777)
+	if err != nil {
+		fi, err = os.Create(fpath)
+		if err != nil {
+			return err
+		}
+	}
+	defer fi.Close()
+
+	wr := csv.NewWriter(fi)
+
+	header := make([]string, len(f.headerTo))
+	for k, v := range f.headerTo {
+		header[v] = k
+	}
+	if err := wr.Write(header); err != nil {
+		return err
+	}
+
+	var rowN uint64
+	for _, col := range f.columns {
+		n := col.GetSize()
+		if rowN < n {
+			rowN = n
+		}
+	}
+
+	rows := make([][]string, rowN)
+	colN := len(f.columns)
+	for rowIdx := uint64(0); rowIdx < rowN; rowIdx++ {
+		row := make([]string, colN)
+		for colIdx, col := range f.columns { // rowIdx * colIdx
+			v, _ := col.GetValue(rowIdx)
+			elem, _ := v.ToString()
+			row[colIdx] = elem
+		}
+		rows[rowIdx] = row
+	}
+
+	if err := wr.WriteAll(rows); err != nil {
+		return err
+	}
+
+	wr.Flush()
+	return wr.Error()
+}
+
+func (f *frame) GetHeader() []string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	rs := make([]string, len(f.headerTo))
+	for k, v := range f.headerTo {
+		rs[v] = k
+	}
+	return rs
 }
 
 func (f *frame) AddColumn(c Column) error {
@@ -152,7 +299,7 @@ func (f *frame) GetColumn(header string) (Column, error) {
 	return f.columns[idx], nil
 }
 
-func (f *frame) GetColumnSize() int {
+func (f *frame) GetColumnNumber() int {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	return len(f.columns)
