@@ -127,14 +127,14 @@ type frame struct {
 	headerTo map[string]int
 }
 
-func NewFrame() Frame {
+func New() Frame {
 	return &frame{
 		columns:  []Column{},
 		headerTo: make(map[string]int),
 	}
 }
 
-func NewFrameFromCSV(header []string, fpath string) (Frame, error) {
+func NewFromCSV(header []string, fpath string) (Frame, error) {
 	f, err := os.OpenFile(fpath, os.O_RDONLY, 0444)
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func NewFrameFromCSV(header []string, fpath string) (Frame, error) {
 		return nil, fmt.Errorf("empty file %s", fpath)
 	}
 
-	fr := NewFrame()
+	fr := New()
 	headerN := len(header)
 	if headerN > 0 { // use this as header
 		// assume no header string at top

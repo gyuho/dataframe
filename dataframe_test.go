@@ -62,7 +62,7 @@ func TestFrame(t *testing.T) {
 		}
 	}
 
-	fr := NewFrame()
+	fr := New()
 	if err := fr.AddColumn(c1); err != nil {
 		t.Fatal(err)
 	}
@@ -104,11 +104,11 @@ func TestFrame(t *testing.T) {
 	}
 }
 
-func TestNewFrameFromCSV(t *testing.T) {
-	if _, err := NewFrameFromCSV([]string{"second"}, "testdata/bench-compared.csv"); err == nil {
+func TestNewFromCSV(t *testing.T) {
+	if _, err := NewFromCSV([]string{"second"}, "testdata/bench-compared.csv"); err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	fr, err := NewFrameFromCSV(nil, "testdata/bench-compared.csv")
+	fr, err := NewFromCSV(nil, "testdata/bench-compared.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,10 +141,10 @@ func TestNewFrameFromCSV(t *testing.T) {
 	defer os.RemoveAll(fpath)
 
 	{
-		if _, err := NewFrameFromCSV([]string{"second"}, fpath); err == nil {
+		if _, err := NewFromCSV([]string{"second"}, fpath); err == nil {
 			t.Fatal("expected error, got nil")
 		}
-		fr, err := NewFrameFromCSV(nil, fpath)
+		fr, err := NewFromCSV(nil, fpath)
 		if err != nil {
 			t.Fatal(err)
 		}
