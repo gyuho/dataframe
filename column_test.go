@@ -84,6 +84,52 @@ func TestColumnNonNil(t *testing.T) {
 	}
 }
 
+func TestColumnAppends(t *testing.T) {
+	c := NewColumn("second")
+	if err := c.Appends(NewValue("100"), 1000); err != nil {
+		t.Fatal(err)
+	}
+	s := c.Len()
+	if s != 1000 {
+		t.Fatalf("expected '1000', got %v", s)
+	}
+	fv, ok := c.Front()
+	if !ok || !fv.EqualTo(NewValue("100")) {
+		t.Fatalf("expected '0', got %v", fv)
+	}
+	fv, ok = c.FrontNonNil()
+	if !ok || !fv.EqualTo(NewValue("100")) {
+		t.Fatalf("expected '0', got %v", fv)
+	}
+	bv, ok := c.Back()
+	if !ok || !bv.EqualTo(NewValue("100")) {
+		t.Fatalf("expected '99', got %v", bv)
+	}
+	bv, ok = c.BackNonNil()
+	if !ok || !bv.EqualTo(NewValue("100")) {
+		t.Fatalf("expected '99', got %v", bv)
+	}
+}
+
+func TestColumnAppendsNil(t *testing.T) {
+	c := NewColumn("second")
+	if err := c.Appends(NewValue(""), 1000); err != nil {
+		t.Fatal(err)
+	}
+	s := c.Len()
+	if s != 1000 {
+		t.Fatalf("expected '1000', got %v", s)
+	}
+	fv, ok := c.Front()
+	if !ok || !fv.EqualTo(NewValue("")) {
+		t.Fatalf("expected '0', got %v", fv)
+	}
+	bv, ok := c.Back()
+	if !ok || !bv.EqualTo(NewValue("")) {
+		t.Fatalf("expected '99', got %v", bv)
+	}
+}
+
 func TestColumnSortByStringAscending(t *testing.T) {
 	c := NewColumn("column")
 	for i := 0; i < 100; i++ {

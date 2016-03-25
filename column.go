@@ -48,6 +48,9 @@ type Column interface {
 	// PopBack deletes the last value.
 	PopBack() (Value, bool)
 
+	// Appends adds the Value to the Column until it reaches the target size.
+	Appends(v Value, targetSize int) error
+
 	// SortByStringAscending sorts Column in string ascending order.
 	SortByStringAscending()
 
@@ -225,6 +228,21 @@ func (c *column) PopBack() (Value, bool) {
 	c.data = c.data[:len(c.data)-1 : len(c.data)-1]
 	c.size--
 	return v, true
+}
+
+func (c *column) Appends(v Value, targetSize int) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.size > 0 && c.size < targetSize {
+		return fmt.Errorf("cannot append with %d less than the column size %d", targetSize, c.size)
+	}
+
+	for i := c.size; i < targetSize; i++ {
+		c.data = append(c.data, v)
+		c.size++
+	}
+	return nil
 }
 
 func (c *column) SortByStringAscending()    { sort.Sort(ByStringAscending(c.data)) }
