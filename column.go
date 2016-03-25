@@ -227,7 +227,7 @@ func (c *column) DeleteRows(start, end int) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if start < 0 || end < 0 || start >= end {
+	if start < 0 || end < 0 || start > end {
 		return fmt.Errorf("wrong range %d %d", start, end)
 	}
 	if start > c.size {
@@ -235,6 +235,9 @@ func (c *column) DeleteRows(start, end int) error {
 	}
 	if end > c.size {
 		return fmt.Errorf("index out of range (end %d, size %d)", end, c.size)
+	}
+	if start == end {
+		return nil
 	}
 
 	delta := end - start
