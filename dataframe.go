@@ -9,14 +9,31 @@ import (
 
 // Frame contains data.
 type Frame interface {
+	// GetHeader returns the slice of headers in order. Header name is unique among its Frame.
 	GetHeader() []string
+
+	// AddColumn adds a Column to Frame.
 	AddColumn(c Column) error
+
+	// GetColumn returns the Column by its header name.
 	GetColumn(header string) (Column, error)
+
+	// GetColumnNumber returns the number of Columns in the Frame.
 	GetColumnNumber() int
+
+	// UpdateHeader updates the header name of a Column.
 	UpdateHeader(origHeader, newHeader string) error
+
+	// DeleteColumn deletes the Column by its header.
 	DeleteColumn(header string) bool
+
+	// ToCSV saves the Frame to a CSV file.
 	ToCSV(fpath string) error
+
+	// ToRows returns the header and data slices.
 	ToRows() ([]string, [][]string)
+
+	// Sort sorts the Frame.
 	Sort(header string, st SortType, so SortOption) error
 }
 

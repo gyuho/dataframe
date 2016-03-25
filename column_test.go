@@ -52,6 +52,38 @@ func TestColumn(t *testing.T) {
 	}
 }
 
+func TestColumnNonNil(t *testing.T) {
+	c := NewColumn("second")
+	if c.GetHeader() != "second" {
+		t.Fatalf("expected 'second', got %v", c.GetHeader())
+	}
+	for i := 0; i < 100; i++ {
+		d := c.PushBack(NewValue(fmt.Sprintf("%d", i)))
+		if i+1 != d {
+			t.Fatalf("expected %d, got %d", i+1, d)
+		}
+	}
+	c.PushFront(NewValue(""))
+	c.PushBack(NewValue(""))
+
+	fv, ok := c.Front()
+	if !ok || !fv.EqualTo(NewValue("")) {
+		t.Fatalf("expected '0', got %v", fv)
+	}
+	fv, ok = c.FrontNonNil()
+	if !ok || !fv.EqualTo(NewValue(fmt.Sprintf("%d", 0))) {
+		t.Fatalf("expected '0', got %v", fv)
+	}
+	bv, ok := c.Back()
+	if !ok || !bv.EqualTo(NewValue("")) {
+		t.Fatalf("expected '99', got %v", bv)
+	}
+	bv, ok = c.BackNonNil()
+	if !ok || !bv.EqualTo(NewValue(fmt.Sprintf("%d", 99))) {
+		t.Fatalf("expected '99', got %v", bv)
+	}
+}
+
 func TestColumnSortByStringAscending(t *testing.T) {
 	c := NewColumn("column")
 	for i := 0; i < 100; i++ {
