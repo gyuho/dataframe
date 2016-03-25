@@ -21,6 +21,9 @@ type Column interface {
 	// is out of index range.
 	GetValue(row int) (Value, error)
 
+	// SetValue overwrites the value
+	SetValue(row int, v Value) error
+
 	// FindValue finds the first Value, and returns the row number.
 	// It returns -1 and false if the value does not exist.
 	FindValue(v Value) (int, bool)
@@ -124,6 +127,17 @@ func (c *column) GetValue(row int) (Value, error) {
 		return nil, fmt.Errorf("index out of range (got %d for size %d)", row, c.size)
 	}
 	return c.data[row], nil
+}
+
+func (c *column) SetValue(row int, v Value) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if row > c.size-1 {
+		return fmt.Errorf("index out of range (got %d for size %d)", row, c.size)
+	}
+	c.data[row] = v
+	return nil
 }
 
 func (c *column) FindValue(v Value) (int, bool) {

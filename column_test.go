@@ -20,7 +20,18 @@ func TestColumn(t *testing.T) {
 	if c.Len() != 100 {
 		t.Fatalf("expected '100', got %v", c.Len())
 	}
-	if v, err := c.GetValue(10); err != nil || !v.EqualTo(NewStringValue(fmt.Sprintf("%d", 10))) {
+
+	if err := c.SetValue(10, NewStringValue("10000")); err != nil {
+		t.Fatal(err)
+	}
+	if v, err := c.GetValue(10); err != nil || !v.EqualTo(NewStringValue("10000")) {
+		t.Fatalf("expected '10', got %v(%v)", v, err)
+	}
+
+	if err := c.SetValue(10, NewStringValue("10")); err != nil {
+		t.Fatal(err)
+	}
+	if v, err := c.GetValue(10); err != nil || !v.EqualTo(NewStringValue("10")) {
 		t.Fatalf("expected '10', got %v(%v)", v, err)
 	}
 	idx, ok := c.FindValue(NewStringValue("10"))
