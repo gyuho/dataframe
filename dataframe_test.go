@@ -215,7 +215,7 @@ func TestDataFrameFindValue(t *testing.T) {
 	minTS := "1458758226"
 	idx, ok := col.FindValue(NewStringValue(minTS))
 	if idx != 361 || !ok {
-		t.Fatalf("expected %d, true, got %d, %v", 0, idx, ok)
+		t.Fatalf("expected 361, true, got %d, %v", idx, ok)
 	}
 	v, err := col.GetValue(idx)
 	if err != nil {
@@ -223,6 +223,26 @@ func TestDataFrameFindValue(t *testing.T) {
 	}
 	if !v.EqualTo(NewStringValue(minTS)) {
 		t.Fatalf("unexpected: %v != %v", v, minTS)
+	}
+
+	if err := col.DeleteRows(0, 2); err != nil {
+		t.Fatal(err)
+	}
+	if col.Len() != 360 {
+		t.Fatalf("expected 360, got %d", col.Len())
+	}
+	{
+		idx, ok := col.FindValue(NewStringValue(minTS))
+		if idx != 359 || !ok {
+			t.Fatalf("expected 359, true, got %d, %v", idx, ok)
+		}
+		v, err := col.GetValue(idx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !v.EqualTo(NewStringValue(minTS)) {
+			t.Fatalf("unexpected: %v != %v", v, minTS)
+		}
 	}
 }
 

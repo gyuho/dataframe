@@ -158,8 +158,8 @@ func TestColumnDeleteRows(t *testing.T) {
 		t.Fatal(err)
 	}
 	idx, ok = c.FindValue(NewStringValue("70"))
-	if idx != 51 || !ok {
-		t.Fatalf("expected 51, true, got %d %v", idx, ok)
+	if idx != 50 || !ok {
+		t.Fatalf("expected 50, true, got %d %v", idx, ok)
 	}
 	if c.Len() != 80 {
 		t.Fatalf("expected 80, got %d", c.Len())

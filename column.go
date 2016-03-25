@@ -241,9 +241,15 @@ func (c *column) DeleteRows(start, end int) error {
 	}
 
 	delta := end - start
-	copy(c.data[start:], c.data[end-1:])
-	c.data = c.data[:len(c.data)-delta : len(c.data)-delta]
 	c.size = c.size - delta
+	var nds []Value
+	for i := range c.data {
+		if i >= start && i < end {
+			continue
+		}
+		nds = append(nds, c.data[i])
+	}
+	c.data = nds
 	return nil
 }
 
