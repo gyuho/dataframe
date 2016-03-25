@@ -47,6 +47,10 @@ func TestColumn(t *testing.T) {
 	if err != nil || !dv.EqualTo(NewStringValue(fmt.Sprintf("%d", 2))) {
 		t.Fatalf("expected '2', got %v(%v)", dv, err)
 	}
+	fidx, ok := c.FindValue(NewStringValue("2"))
+	if fidx != -1 || ok {
+		t.Fatalf("expected -1, false, got %v %v", fidx, ok)
+	}
 
 	if pv := c.PushFront(NewStringValue("A")); pv != 98 {
 		t.Fatalf("expected '98', got %v", pv)
@@ -135,6 +139,34 @@ func TestColumnAppendsNil(t *testing.T) {
 	bv, ok := c.Back()
 	if !ok || !bv.EqualTo(NewStringValue("")) {
 		t.Fatalf("expected '', got %v", bv)
+	}
+}
+
+func TestColumnDeleteRows(t *testing.T) {
+	c := NewColumn("second")
+	for i := 0; i < 100; i++ {
+		d := c.PushBack(NewStringValue(fmt.Sprintf("%d", i)))
+		if i+1 != d {
+			t.Fatalf("expected %d, got %d", i+1, d)
+		}
+	}
+	idx, ok := c.FindValue(NewStringValue("60"))
+	if idx != 60 || !ok {
+		t.Fatalf("expected 60, true, got %d %v", idx, ok)
+	}
+	if err := c.DeleteRows(50, 70); err != nil {
+		t.Fatal(err)
+	}
+	idx, ok = c.FindValue(NewStringValue("70"))
+	if idx != 51 || !ok {
+		t.Fatalf("expected 51, true, got %d %v", idx, ok)
+	}
+	if c.Len() != 80 {
+		t.Fatalf("expected 80, got %d", c.Len())
+	}
+	idx, ok = c.FindValue(NewStringValue("60"))
+	if idx != -1 || ok {
+		t.Fatalf("expected -1, false, got %d %v", idx, ok)
 	}
 }
 

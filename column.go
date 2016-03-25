@@ -22,7 +22,7 @@ type Column interface {
 	GetValue(row int) (Value, error)
 
 	// FindValue finds the first Value, and returns the row number.
-	// It returns false if the value does not exist.
+	// It returns -1 and false if the value does not exist.
 	FindValue(v Value) (int, bool)
 
 	// Front returns the first row Value.
@@ -45,6 +45,9 @@ type Column interface {
 
 	// DeleteRow deletes a row by index.
 	DeleteRow(row int) (Value, error)
+
+	// DeleteRows deletes rows by index [start, end).
+	DeleteRows(start, end int) error
 
 	// PopFront deletes the value at front.
 	PopFront() (Value, bool)
@@ -214,10 +217,31 @@ func (c *column) DeleteRow(row int) (Value, error) {
 		return nil, fmt.Errorf("index out of range (got %d for size %d)", row, c.size)
 	}
 	v := c.data[row]
-	copy(c.data[row:], c.data[row:])
+	copy(c.data[row:], c.data[row+1:])
 	c.data = c.data[:len(c.data)-1 : len(c.data)-1]
 	c.size--
 	return v, nil
+}
+
+func (c *column) DeleteRows(start, end int) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if start < 0 || end < 0 || start >= end {
+		return fmt.Errorf("wrong range %d %d", start, end)
+	}
+	if start > c.size {
+		return fmt.Errorf("index out of range (start %d, size %d)", start, c.size)
+	}
+	if end > c.size {
+		return fmt.Errorf("index out of range (end %d, size %d)", end, c.size)
+	}
+
+	delta := end - start
+	copy(c.data[start:], c.data[end-1:])
+	c.data = c.data[:len(c.data)-delta : len(c.data)-delta]
+	c.size = c.size - delta
+	return nil
 }
 
 func (c *column) PopFront() (Value, bool) {
