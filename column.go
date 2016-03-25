@@ -21,6 +21,10 @@ type Column interface {
 	// is out of index range.
 	GetValue(row int) (Value, error)
 
+	// FindValue finds the first Value, and returns the row number.
+	// It returns false if the value does not exist.
+	FindValue(v Value) (int, bool)
+
 	// Front returns the first row Value.
 	Front() (Value, bool)
 
@@ -114,6 +118,18 @@ func (c *column) GetValue(row int) (Value, error) {
 		return nil, fmt.Errorf("index out of range (got %d for size %d)", row, c.size)
 	}
 	return c.data[row], nil
+}
+
+func (c *column) FindValue(v Value) (int, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for i := range c.data {
+		if c.data[i].EqualTo(v) {
+			return i, true
+		}
+	}
+	return -1, false
 }
 
 func (c *column) Front() (Value, bool) {

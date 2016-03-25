@@ -23,6 +23,10 @@ func TestColumn(t *testing.T) {
 	if v, err := c.GetValue(10); err != nil || !v.EqualTo(NewStringValue(fmt.Sprintf("%d", 10))) {
 		t.Fatalf("expected '10', got %v(%v)", v, err)
 	}
+	idx, ok := c.FindValue(NewStringValue("10"))
+	if !ok || idx != 10 {
+		t.Fatalf("expected 10, got %d", idx)
+	}
 	bv, ok := c.Back()
 	if !ok || !bv.EqualTo(NewStringValue(fmt.Sprintf("%d", 99))) {
 		t.Fatalf("expected '99', got %v", bv)
