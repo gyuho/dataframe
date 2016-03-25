@@ -18,6 +18,9 @@ type Frame interface {
 	// GetColumn returns the Column by its header name.
 	GetColumn(header string) (Column, error)
 
+	// GetColumns returns all Columns.
+	GetColumns() []Column
+
 	// GetColumnNumber returns the number of Columns in the Frame.
 	GetColumnNumber() int
 
@@ -169,6 +172,13 @@ func (f *frame) GetColumn(header string) (Column, error) {
 		return nil, fmt.Errorf("%q does not exist", header)
 	}
 	return f.columns[idx], nil
+}
+
+func (f *frame) GetColumns() []Column {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	return f.columns
 }
 
 func (f *frame) GetColumnNumber() int {
