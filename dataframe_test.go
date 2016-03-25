@@ -90,10 +90,10 @@ func TestFrame(t *testing.T) {
 }
 
 func TestNewFromCSV(t *testing.T) {
-	if _, err := NewFromCSV([]string{"second"}, "testdata/bench-compared.csv"); err == nil {
+	if _, err := NewFromCSV([]string{"second"}, "testdata/bench-01-compared.csv"); err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	fr, err := NewFromCSV(nil, "testdata/bench-compared.csv")
+	fr, err := NewFromCSV(nil, "testdata/bench-01-compared.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,10 +105,10 @@ func TestNewFromCSV(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if v, err := ac.GetValue(77); !v.IsNil() || err != nil {
+	if v, err := ac.GetValue(229); !v.IsNil() || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v.IsNil(), err)
 	}
-	if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("51.607760")) || err != nil {
+	if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("4.484004")) || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v, err)
 	}
 	ac2, err := fr.GetColumn("avg_latency_ms_etcd2")
@@ -141,10 +141,10 @@ func TestNewFromCSV(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if v, err := ac.GetValue(77); !v.IsNil() || err != nil {
+		if v, err := ac.GetValue(229); !v.IsNil() || err != nil {
 			t.Fatalf("expected <nil, nil>, got <%v, %v>", v.IsNil(), err)
 		}
-		if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("51.607760")) || err != nil {
+		if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("4.484004")) || err != nil {
 			t.Fatalf("expected <nil, nil>, got <%v, %v>", v, err)
 		}
 		ac2, err := fr.GetColumn("avg_latency_ms_etcd2")
@@ -158,7 +158,7 @@ func TestNewFromCSV(t *testing.T) {
 }
 
 func TestNewFromRows(t *testing.T) {
-	fr, err := NewFromCSV(nil, "testdata/bench-compared.csv")
+	fr, err := NewFromCSV(nil, "testdata/bench-01-compared.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,10 +185,10 @@ func TestNewFromRows(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if v, err := ac.GetValue(77); !v.IsNil() || err != nil {
+	if v, err := ac.GetValue(229); !v.IsNil() || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v.IsNil(), err)
 	}
-	if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("51.607760")) || err != nil {
+	if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("4.484004")) || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v, err)
 	}
 	ac2, err := fr.GetColumn("avg_latency_ms_etcd2")
@@ -200,8 +200,31 @@ func TestNewFromRows(t *testing.T) {
 	}
 }
 
+func TestDataFrameFindValue(t *testing.T) {
+	fr, err := NewFromCSV(nil, "testdata/bench-01-etcd-1-monitor.csv")
+	if err != nil {
+		t.Fatal(err)
+	}
+	col, err := fr.GetColumn("unix_ts")
+	if err != nil {
+		t.Fatal(err)
+	}
+	minTS := "1458758226"
+	idx, ok := col.FindValue(NewStringValue(minTS))
+	if idx != 361 || !ok {
+		t.Fatalf("expected %d, true, got %d, %v", 0, idx, ok)
+	}
+	v, err := col.GetValue(idx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !v.EqualTo(NewStringValue(minTS)) {
+		t.Fatalf("unexpected: %v != %v", v, minTS)
+	}
+}
+
 func TestSort(t *testing.T) {
-	fr, err := NewFromCSV(nil, "testdata/bench-compared.csv")
+	fr, err := NewFromCSV(nil, "testdata/bench-01-compared.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
