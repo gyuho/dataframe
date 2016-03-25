@@ -7,11 +7,22 @@ import (
 
 // Value represents the value in data frame.
 type Value interface {
+	// ToString parses Value to string. It returns false if not possible.
 	ToString() (string, bool)
+
+	// ToNumber parses Value to float64. It returns false if not possible.
 	ToNumber() (float64, bool)
+
+	// ToTime parses Value to time.Time based on the layout. It returns false if not possible.
 	ToTime(layout string) (time.Time, bool)
+
+	// ToDuration parses Value to time.Duration. It returns false if not possible.
 	ToDuration() (time.Duration, bool)
+
+	// IsNil returns true if the Value is nil.
 	IsNil() bool
+
+	// EqualTo returns true if the Value is equal to v.
 	EqualTo(v Value) bool
 }
 
