@@ -13,6 +13,7 @@ type Frame interface {
 	AddColumn(c Column) error
 	GetColumn(header string) (Column, error)
 	GetColumnNumber() int
+	UpdateHeader(origHeader, newHeader string) error
 	DeleteColumn(header string) bool
 	ToCSV(fpath string) error
 	ToRows() ([]string, [][]string)
@@ -121,6 +122,7 @@ func NewFromCSV(header []string, fpath string) (Frame, error) {
 func (f *frame) GetHeader() []string {
 	f.mu.Lock()
 	defer f.mu.Unlock()
+
 	rs := make([]string, len(f.headerTo))
 	for k, v := range f.headerTo {
 		rs[v] = k
@@ -131,6 +133,7 @@ func (f *frame) GetHeader() []string {
 func (f *frame) AddColumn(c Column) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
+
 	header := c.GetHeader()
 	if _, ok := f.headerTo[header]; ok {
 		return fmt.Errorf("%q already exists", header)
@@ -143,6 +146,7 @@ func (f *frame) AddColumn(c Column) error {
 func (f *frame) GetColumn(header string) (Column, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
+
 	idx, ok := f.headerTo[header]
 	if !ok {
 		return nil, fmt.Errorf("%q does not exist", header)
@@ -153,12 +157,31 @@ func (f *frame) GetColumn(header string) (Column, error) {
 func (f *frame) GetColumnNumber() int {
 	f.mu.Lock()
 	defer f.mu.Unlock()
+
 	return len(f.columns)
+}
+
+func (f *frame) UpdateHeader(origHeader, newHeader string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	idx, ok := f.headerTo[origHeader]
+	if !ok {
+		return fmt.Errorf("%q does not exist", origHeader)
+	}
+	if _, ok := f.headerTo[newHeader]; ok {
+		return fmt.Errorf("%q already exists", newHeader)
+	}
+	f.columns[idx].UpdateHeader(newHeader)
+	f.headerTo[newHeader] = idx
+	delete(f.headerTo, origHeader)
+	return nil
 }
 
 func (f *frame) DeleteColumn(header string) bool {
 	f.mu.Lock()
 	defer f.mu.Unlock()
+
 	idx, ok := f.headerTo[header]
 	if !ok {
 		return false
@@ -236,6 +259,8 @@ func (f *frame) ToCSV(fpath string) error {
 	return wr.Error()
 }
 
+// Sort sorts the data frame.
+// TODO: use tree?
 func (f *frame) Sort(header string, st SortType, so SortOption) error {
 	f.mu.Lock()
 	idx, ok := f.headerTo[header]
@@ -276,7 +301,6 @@ func (f *frame) Sort(header string, st SortType, so SortOption) error {
 	}
 
 	headers, rows := f.ToRows()
-	// sort by idx
 	SortBy(
 		rows,
 		lesses...,

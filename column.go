@@ -11,6 +11,8 @@ type Column interface {
 	Len() int
 
 	GetHeader() string
+	UpdateHeader(header string)
+
 	GetValue(row int) (Value, error)
 
 	Front() (Value, bool)
@@ -57,6 +59,12 @@ func (c *column) GetHeader() string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.header
+}
+
+func (c *column) UpdateHeader(header string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.header = header
 }
 
 func (c *column) GetValue(row int) (Value, error) {

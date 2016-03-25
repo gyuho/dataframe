@@ -15,6 +15,14 @@ func TestFrame(t *testing.T) {
 			t.Fatalf("expected %d, got %d", i+1, d)
 		}
 	}
+	c1.UpdateHeader("aaa")
+	if c1.GetHeader() != "aaa" {
+		t.Fatalf("expected 'aaa', got %v", c1.GetHeader())
+	}
+	c1.UpdateHeader("second1")
+	if c1.GetHeader() != "second1" {
+		t.Fatalf("expected 'second1', got %v", c1.GetHeader())
+	}
 
 	c2 := NewColumn("second2")
 	for i := 0; i < 100; i++ {
@@ -37,10 +45,25 @@ func TestFrame(t *testing.T) {
 	if err := fr.AddColumn(c2); err == nil {
 		t.Fatal("expected error")
 	}
+
 	if c, err := fr.GetColumn("second1"); c == nil || err != nil {
 		t.Fatal(err)
 	}
 	if c, err := fr.GetColumn("second2"); c == nil || err != nil {
+		t.Fatal(err)
+	}
+
+	if err := fr.UpdateHeader("second2", "aaa"); err != nil {
+		t.Fatal(err)
+	}
+	if c, err := fr.GetColumn("aaa"); c == nil || err != nil {
+		t.Fatal(err)
+	}
+	if hs := fr.GetHeader(); !reflect.DeepEqual(hs, []string{"second1", "aaa"}) {
+		t.Fatalf("expected equal, got %q != %q", hs, []string{"second1", "aaa"})
+	}
+
+	if err := fr.UpdateHeader("aaa", "second2"); err != nil {
 		t.Fatal(err)
 	}
 	if hs := fr.GetHeader(); !reflect.DeepEqual(hs, []string{"second1", "second2"}) {
