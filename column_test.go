@@ -17,8 +17,8 @@ func TestColumn(t *testing.T) {
 			t.Fatalf("expected %d, got %d", i+1, d)
 		}
 	}
-	if c.Len() != 100 {
-		t.Fatalf("expected '100', got %v", c.Len())
+	if c.RowNumber() != 100 {
+		t.Fatalf("expected '100', got %v", c.RowNumber())
 	}
 
 	if err := c.SetValue(10, NewStringValue("10000")); err != nil {
@@ -110,7 +110,7 @@ func TestColumnAppends(t *testing.T) {
 	if err := c.Appends(NewStringValue("1000"), 1000); err != nil {
 		t.Fatal(err)
 	}
-	s := c.Len()
+	s := c.RowNumber()
 	if s != 1000 {
 		t.Fatalf("expected '1000', got %v", s)
 	}
@@ -139,7 +139,7 @@ func TestColumnAppendsNil(t *testing.T) {
 	if err := c.Appends(NewStringValue(""), 1000); err != nil {
 		t.Fatal(err)
 	}
-	s := c.Len()
+	s := c.RowNumber()
 	if s != 1000 {
 		t.Fatalf("expected '1000', got %v", s)
 	}
@@ -172,8 +172,8 @@ func TestColumnDeleteRows(t *testing.T) {
 	if idx != 50 || !ok {
 		t.Fatalf("expected 50, true, got %d %v", idx, ok)
 	}
-	if c.Len() != 80 {
-		t.Fatalf("expected 80, got %d", c.Len())
+	if c.RowNumber() != 80 {
+		t.Fatalf("expected 80, got %d", c.RowNumber())
 	}
 	idx, ok = c.FindValue(NewStringValue("60"))
 	if idx != -1 || ok {
@@ -204,8 +204,8 @@ func TestColumnKeepRows(t *testing.T) {
 	if idx != -1 || ok {
 		t.Fatalf("expected -1, false, got %d %v", idx, ok)
 	}
-	if c.Len() != 20 {
-		t.Fatalf("expected 20, got %d", c.Len())
+	if c.RowNumber() != 20 {
+		t.Fatalf("expected 20, got %d", c.RowNumber())
 	}
 	idx, ok = c.FindValue(NewStringValue("90"))
 	if idx != -1 || ok {

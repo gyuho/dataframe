@@ -115,8 +115,8 @@ func TestNewFromCSV(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ac.Len() != ac2.Len() {
-		t.Fatalf("expected equal %v != %v", ac.Len(), ac2.Len())
+	if ac.RowNumber() != ac2.RowNumber() {
+		t.Fatalf("expected equal %v != %v", ac.RowNumber(), ac2.RowNumber())
 	}
 
 	fpath := "test.csv"
@@ -151,8 +151,8 @@ func TestNewFromCSV(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if ac.Len() != ac2.Len() {
-			t.Fatalf("expected equal %v != %v", ac.Len(), ac2.Len())
+		if ac.RowNumber() != ac2.RowNumber() {
+			t.Fatalf("expected equal %v != %v", ac.RowNumber(), ac2.RowNumber())
 		}
 	}
 }
@@ -195,8 +195,8 @@ func TestNewFromRows(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ac.Len() != ac2.Len() {
-		t.Fatalf("expected equal %v != %v", ac.Len(), ac2.Len())
+	if ac.RowNumber() != ac2.RowNumber() {
+		t.Fatalf("expected equal %v != %v", ac.RowNumber(), ac2.RowNumber())
 	}
 }
 
@@ -209,8 +209,8 @@ func TestDataFrameFindValue(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if col.Len() != 362 {
-		t.Fatalf("expected 362, got %d", col.Len())
+	if col.RowNumber() != 362 {
+		t.Fatalf("expected 362, got %d", col.RowNumber())
 	}
 	minTS := "1458758226"
 	idx, ok := col.FindValue(NewStringValue(minTS))
@@ -228,8 +228,8 @@ func TestDataFrameFindValue(t *testing.T) {
 	if err := col.DeleteRows(0, 2); err != nil {
 		t.Fatal(err)
 	}
-	if col.Len() != 360 {
-		t.Fatalf("expected 360, got %d", col.Len())
+	if col.RowNumber() != 360 {
+		t.Fatalf("expected 360, got %d", col.RowNumber())
 	}
 	{
 		idx, ok := col.FindValue(NewStringValue(minTS))

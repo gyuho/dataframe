@@ -231,7 +231,7 @@ func (f *frame) ToRows() ([]string, [][]string) {
 
 	var rowN int
 	for _, col := range f.columns {
-		n := col.Len()
+		n := col.RowNumber()
 		if rowN < n {
 			rowN = n
 		}

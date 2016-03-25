@@ -8,8 +8,8 @@ import (
 
 // Column represents column-based data.
 type Column interface {
-	// Len returns the number of rows of the Column.
-	Len() int
+	// RowNumber returns the number of rows of the Column.
+	RowNumber() int
 
 	// GetHeader returns the header of the Column.
 	GetHeader() string
@@ -98,7 +98,7 @@ func NewColumn(hd string) Column {
 	}
 }
 
-func (c *column) Len() int {
+func (c *column) RowNumber() int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
