@@ -35,6 +35,13 @@ func TestValue(t *testing.T) {
 	}
 }
 
+func TestNewStringValueNil(t *testing.T) {
+	v := NewStringValueNil()
+	if !v.IsNil() {
+		t.Fatalf("expected nil, got %v", v)
+	}
+}
+
 func TestByStringAscending(t *testing.T) {
 	vs := []Value{}
 	for i := 0; i < 100; i++ {

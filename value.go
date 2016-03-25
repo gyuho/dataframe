@@ -30,6 +30,10 @@ func NewStringValue(v string) Value {
 	return String(v)
 }
 
+func NewStringValueNil() Value {
+	return String("")
+}
+
 type String string
 
 func (s String) ToString() (string, bool) {
