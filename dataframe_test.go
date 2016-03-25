@@ -79,7 +79,7 @@ func TestFrame(t *testing.T) {
 		t.Fatalf("expected 'false', got %v", ok)
 	}
 	if c, err := fr.GetColumn("second1"); c != nil || err == nil {
-		t.Fatal("expected <nil, 'second1 does not exist'>, but <%v, %v>", c, err)
+		t.Fatalf("expected <nil, 'second1 does not exist'>, but <%v, %v>", c, err)
 	}
 	if ok := fr.DeleteColumn("second2"); !ok {
 		t.Fatalf("expected 'true', got %v", ok)
