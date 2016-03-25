@@ -170,6 +170,38 @@ func TestColumnDeleteRows(t *testing.T) {
 	}
 }
 
+func TestColumnKeepRows(t *testing.T) {
+	c := NewColumn("second")
+	for i := 0; i < 100; i++ {
+		d := c.PushBack(NewStringValue(fmt.Sprintf("%d", i)))
+		if i+1 != d {
+			t.Fatalf("expected %d, got %d", i+1, d)
+		}
+	}
+	if err := c.KeepRows(50, 70); err != nil {
+		t.Fatal(err)
+	}
+	idx, ok := c.FindValue(NewStringValue("50"))
+	if idx != 0 || !ok {
+		t.Fatalf("expected 0, true, got %d %v", idx, ok)
+	}
+	idx, ok = c.FindValue(NewStringValue("69"))
+	if idx != 19 || !ok {
+		t.Fatalf("expected 19, true, got %d %v", idx, ok)
+	}
+	idx, ok = c.FindValue(NewStringValue("70"))
+	if idx != -1 || ok {
+		t.Fatalf("expected -1, false, got %d %v", idx, ok)
+	}
+	if c.Len() != 20 {
+		t.Fatalf("expected 20, got %d", c.Len())
+	}
+	idx, ok = c.FindValue(NewStringValue("90"))
+	if idx != -1 || ok {
+		t.Fatalf("expected -1, false, got %d %v", idx, ok)
+	}
+}
+
 func TestColumnSortByStringAscending(t *testing.T) {
 	c := NewColumn("column")
 	for i := 0; i < 100; i++ {

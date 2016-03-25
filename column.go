@@ -49,6 +49,9 @@ type Column interface {
 	// DeleteRows deletes rows by index [start, end).
 	DeleteRows(start, end int) error
 
+	// KeepRows keeps the rows by index [start, end).
+	KeepRows(start, end int) error
+
 	// PopFront deletes the value at front.
 	PopFront() (Value, bool)
 
@@ -248,6 +251,33 @@ func (c *column) DeleteRows(start, end int) error {
 			continue
 		}
 		nds = append(nds, c.data[i])
+	}
+	c.data = nds
+	return nil
+}
+
+func (c *column) KeepRows(start, end int) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if start < 0 || end < 0 || start > end {
+		return fmt.Errorf("wrong range %d %d", start, end)
+	}
+	if start > c.size {
+		return fmt.Errorf("index out of range (start %d, size %d)", start, c.size)
+	}
+	if end > c.size {
+		return fmt.Errorf("index out of range (end %d, size %d)", end, c.size)
+	}
+	if start == end {
+		return nil
+	}
+
+	delta := end - start
+	c.size = delta
+	var nds []Value
+	for _, v := range c.data[start:end] {
+		nds = append(nds, v)
 	}
 	c.data = nds
 	return nil
