@@ -26,7 +26,7 @@ type Value interface {
 	EqualTo(v Value) bool
 }
 
-func NewValue(v string) Value {
+func NewStringValue(v string) Value {
 	return String(v)
 }
 

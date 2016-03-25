@@ -234,7 +234,7 @@ func (c *column) Appends(v Value, targetSize int) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if c.size > 0 && c.size < targetSize {
+	if c.size > 0 && c.size > targetSize {
 		return fmt.Errorf("cannot append with %d less than the column size %d", targetSize, c.size)
 	}
 

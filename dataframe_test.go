@@ -10,7 +10,7 @@ import (
 func TestFrame(t *testing.T) {
 	c1 := NewColumn("second1")
 	for i := 0; i < 100; i++ {
-		d := c1.PushBack(NewValue(fmt.Sprintf("%d", i)))
+		d := c1.PushBack(NewStringValue(fmt.Sprintf("%d", i)))
 		if i+1 != d {
 			t.Fatalf("expected %d, got %d", i+1, d)
 		}
@@ -26,7 +26,7 @@ func TestFrame(t *testing.T) {
 
 	c2 := NewColumn("second2")
 	for i := 0; i < 100; i++ {
-		d := c2.PushBack(NewValue(fmt.Sprintf("%d", i)))
+		d := c2.PushBack(NewStringValue(fmt.Sprintf("%d", i)))
 		if i+1 != d {
 			t.Fatalf("expected %d, got %d", i+1, d)
 		}
@@ -108,7 +108,7 @@ func TestNewFromCSV(t *testing.T) {
 	if v, err := ac.GetValue(77); !v.IsNil() || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v.IsNil(), err)
 	}
-	if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewValue("51.607760")) || err != nil {
+	if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("51.607760")) || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v, err)
 	}
 	ac2, err := fr.GetColumn("avg_latency_ms_etcd2")
@@ -144,7 +144,7 @@ func TestNewFromCSV(t *testing.T) {
 		if v, err := ac.GetValue(77); !v.IsNil() || err != nil {
 			t.Fatalf("expected <nil, nil>, got <%v, %v>", v.IsNil(), err)
 		}
-		if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewValue("51.607760")) || err != nil {
+		if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("51.607760")) || err != nil {
 			t.Fatalf("expected <nil, nil>, got <%v, %v>", v, err)
 		}
 		ac2, err := fr.GetColumn("avg_latency_ms_etcd2")
@@ -188,7 +188,7 @@ func TestNewFromRows(t *testing.T) {
 	if v, err := ac.GetValue(77); !v.IsNil() || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v.IsNil(), err)
 	}
-	if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewValue("51.607760")) || err != nil {
+	if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("51.607760")) || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v, err)
 	}
 	ac2, err := fr.GetColumn("avg_latency_ms_etcd2")

@@ -68,11 +68,11 @@ func NewFromRows(header []string, rows [][]string) (Frame, error) {
 				return nil, fmt.Errorf("header %q is not specified correctly for %q", header, row)
 			}
 			for j, v := range row {
-				cols[j].PushBack(NewValue(v))
+				cols[j].PushBack(NewStringValue(v))
 			}
 			if rowN < headerN { // fill in empty values
 				for k := rowN; k < headerN; k++ {
-					cols[k].PushBack(NewValue(""))
+					cols[k].PushBack(NewStringValue(""))
 				}
 			}
 		}
@@ -100,11 +100,11 @@ func NewFromRows(header []string, rows [][]string) (Frame, error) {
 			return nil, fmt.Errorf("header %q is not specified correctly for %q", header, row)
 		}
 		for j, v := range row {
-			cols[j].PushBack(NewValue(v))
+			cols[j].PushBack(NewStringValue(v))
 		}
 		if rowN < headerN { // fill in empty values
 			for k := rowN; k < headerN; k++ {
-				cols[k].PushBack(NewValue(""))
+				cols[k].PushBack(NewStringValue(""))
 			}
 		}
 	}
