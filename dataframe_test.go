@@ -90,18 +90,18 @@ func TestFrame(t *testing.T) {
 }
 
 func TestNewFromCSV(t *testing.T) {
-	if _, err := NewFromCSV([]string{"second"}, "testdata/bench-01-compared.csv"); err == nil {
+	if _, err := NewFromCSV([]string{"second"}, "testdata/bench-01-all-aggregated.csv"); err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	fr, err := NewFromCSV(nil, "testdata/bench-01-compared.csv")
+	fr, err := NewFromCSV(nil, "testdata/bench-01-all-aggregated.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
-	cols := []string{"second", "avg_latency_ms_consul", "throughput_consul", "avg_cpu_consul", "avg_memory_mb_consul", "avg_latency_ms_etcd", "throughput_etcd", "avg_cpu_etcd", "avg_memory_mb_etcd", "avg_latency_ms_etcd2", "throughput_etcd2", "avg_cpu_etcd2", "avg_memory_mb_etcd2", "avg_latency_ms_zk", "throughput_zk", "avg_cpu_zk", "avg_memory_mb_zk"}
+	cols := []string{"second", "avg_latency_ms_consul", "throughput_consul", "cumulative_throughput_consul", "avg_cpu_consul", "avg_memory_mb_consul", "avg_latency_ms_etcd3", "throughput_etcd3", "cumulative_throughput_etcd3", "avg_cpu_etcd3", "avg_memory_mb_etcd3", "avg_latency_ms_etcd2", "throughput_etcd2", "cumulative_throughput_etcd2", "avg_cpu_etcd2", "avg_memory_mb_etcd2", "avg_latency_ms_zk", "throughput_zk", "cumulative_throughput_zk", "avg_cpu_zk", "avg_memory_mb_zk"}
 	if !reflect.DeepEqual(fr.GetHeader(), cols) {
 		t.Fatalf("expected %q, got %q", cols, fr.GetHeader())
 	}
-	ac, err := fr.GetColumn("avg_latency_ms_etcd")
+	ac, err := fr.GetColumn("avg_latency_ms_etcd3")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -133,11 +133,11 @@ func TestNewFromCSV(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		cols := []string{"second", "avg_latency_ms_consul", "throughput_consul", "avg_cpu_consul", "avg_memory_mb_consul", "avg_latency_ms_etcd", "throughput_etcd", "avg_cpu_etcd", "avg_memory_mb_etcd", "avg_latency_ms_etcd2", "throughput_etcd2", "avg_cpu_etcd2", "avg_memory_mb_etcd2", "avg_latency_ms_zk", "throughput_zk", "avg_cpu_zk", "avg_memory_mb_zk"}
+		cols := []string{"second", "avg_latency_ms_consul", "throughput_consul", "cumulative_throughput_consul", "avg_cpu_consul", "avg_memory_mb_consul", "avg_latency_ms_etcd3", "throughput_etcd3", "cumulative_throughput_etcd3", "avg_cpu_etcd3", "avg_memory_mb_etcd3", "avg_latency_ms_etcd2", "throughput_etcd2", "cumulative_throughput_etcd2", "avg_cpu_etcd2", "avg_memory_mb_etcd2", "avg_latency_ms_zk", "throughput_zk", "cumulative_throughput_zk", "avg_cpu_zk", "avg_memory_mb_zk"}
 		if !reflect.DeepEqual(fr.GetHeader(), cols) {
 			t.Fatalf("expected %q, got %q", cols, fr.GetHeader())
 		}
-		ac, err := fr.GetColumn("avg_latency_ms_etcd")
+		ac, err := fr.GetColumn("avg_latency_ms_etcd3")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -158,7 +158,7 @@ func TestNewFromCSV(t *testing.T) {
 }
 
 func TestNewFromRows(t *testing.T) {
-	fr, err := NewFromCSV(nil, "testdata/bench-01-compared.csv")
+	fr, err := NewFromCSV(nil, "testdata/bench-01-all-aggregated.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,11 +177,11 @@ func TestNewFromRows(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cols := []string{"second", "avg_latency_ms_consul", "throughput_consul", "avg_cpu_consul", "avg_memory_mb_consul", "avg_latency_ms_etcd", "throughput_etcd", "avg_cpu_etcd", "avg_memory_mb_etcd", "avg_latency_ms_etcd2", "throughput_etcd2", "avg_cpu_etcd2", "avg_memory_mb_etcd2", "avg_latency_ms_zk", "throughput_zk", "avg_cpu_zk", "avg_memory_mb_zk"}
+	cols := []string{"second", "avg_latency_ms_consul", "throughput_consul", "cumulative_throughput_consul", "avg_cpu_consul", "avg_memory_mb_consul", "avg_latency_ms_etcd3", "throughput_etcd3", "cumulative_throughput_etcd3", "avg_cpu_etcd3", "avg_memory_mb_etcd3", "avg_latency_ms_etcd2", "throughput_etcd2", "cumulative_throughput_etcd2", "avg_cpu_etcd2", "avg_memory_mb_etcd2", "avg_latency_ms_zk", "throughput_zk", "cumulative_throughput_zk", "avg_cpu_zk", "avg_memory_mb_zk"}
 	if !reflect.DeepEqual(fr.GetHeader(), cols) {
 		t.Fatalf("expected %q, got %q", cols, fr.GetHeader())
 	}
-	ac, err := fr.GetColumn("avg_latency_ms_etcd")
+	ac, err := fr.GetColumn("avg_latency_ms_etcd3")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -247,7 +247,7 @@ func TestDataFrameFindValue(t *testing.T) {
 }
 
 func TestSort(t *testing.T) {
-	fr, err := NewFromCSV(nil, "testdata/bench-01-compared.csv")
+	fr, err := NewFromCSV(nil, "testdata/bench-01-all-aggregated.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
