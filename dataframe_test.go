@@ -209,6 +209,9 @@ func TestDataFrameFindValue(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if col.Len() != 362 {
+		t.Fatalf("expected 362, got %d", col.Len())
+	}
 	minTS := "1458758226"
 	idx, ok := col.FindValue(NewStringValue(minTS))
 	if idx != 361 || !ok {
