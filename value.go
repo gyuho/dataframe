@@ -1,6 +1,7 @@
 package dataframe
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -26,8 +27,22 @@ type Value interface {
 	EqualTo(v Value) bool
 }
 
-func NewStringValue(v string) Value {
-	return String(v)
+func NewStringValue(v interface{}) Value {
+	switch t := v.(type) {
+	case string:
+		return String(t)
+	case int:
+		return String(strconv.FormatInt(int64(t), 10))
+	case float64:
+		return String(strconv.FormatFloat(t, 'f', -1, 64))
+	case time.Time:
+		return String(t.String())
+	case time.Duration:
+		return String(t.String())
+	default:
+		panic(fmt.Errorf("%v is not supported", v))
+	}
+	return nil
 }
 
 func NewStringValueNil() Value {
