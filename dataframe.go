@@ -9,32 +9,35 @@ import (
 
 // Frame contains data.
 type Frame interface {
-	// GetHeader returns the slice of headers in order. Header name is unique among its Frame.
-	GetHeader() []string
+	// Headers returns the slice of headers in order. Header name is unique among its Frame.
+	Headers() []string
 
 	// AddColumn adds a Column to Frame.
 	AddColumn(c Column) error
 
-	// GetColumn returns the Column by its header name.
-	GetColumn(header string) (Column, error)
+	// Column returns the Column by its header name.
+	Column(header string) (Column, error)
 
-	// GetColumns returns all Columns.
-	GetColumns() []Column
+	// Columns returns all Columns.
+	Columns() []Column
 
-	// GetColumnNumber returns the number of Columns in the Frame.
-	GetColumnNumber() int
+	// CountColumn returns the number of Columns in the Frame.
+	CountColumn() int
 
 	// UpdateHeader updates the header name of a Column.
 	UpdateHeader(origHeader, newHeader string) error
 
+	// MoveColumn moves the column right before the target index.
+	MoveColumn(header string, target int) error
+
 	// DeleteColumn deletes the Column by its header.
 	DeleteColumn(header string) bool
 
-	// ToCSV saves the Frame to a CSV file.
-	ToCSV(fpath string) error
+	// CSV saves the Frame to a CSV file.
+	CSV(fpath string) error
 
-	// ToRows returns the header and data slices.
-	ToRows() ([]string, [][]string)
+	// Rows returns the header and data slices.
+	Rows() ([]string, [][]string)
 
 	// Sort sorts the Frame.
 	Sort(header string, st SortType, so SortOption) error
@@ -46,6 +49,7 @@ type frame struct {
 	headerTo map[string]int
 }
 
+// New returns a new Frame.
 func New() Frame {
 	return &frame{
 		columns:  []Column{},
@@ -53,6 +57,7 @@ func New() Frame {
 	}
 }
 
+// NewFromRows creates Frame from rows.
 func NewFromRows(header []string, rows [][]string) (Frame, error) {
 	if len(rows) < 1 {
 		return nil, fmt.Errorf("empty row %q", rows)
@@ -119,6 +124,7 @@ func NewFromRows(header []string, rows [][]string) (Frame, error) {
 	return fr, nil
 }
 
+// NewFromCSV creates a new Frame from CSV.
 func NewFromCSV(header []string, fpath string) (Frame, error) {
 	f, err := os.OpenFile(fpath, os.O_RDONLY, 0444)
 	if err != nil {
@@ -139,7 +145,7 @@ func NewFromCSV(header []string, fpath string) (Frame, error) {
 	return NewFromRows(header, rows)
 }
 
-func (f *frame) GetHeader() []string {
+func (f *frame) Headers() []string {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -154,7 +160,7 @@ func (f *frame) AddColumn(c Column) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	header := c.GetHeader()
+	header := c.Header()
 	if _, ok := f.headerTo[header]; ok {
 		return fmt.Errorf("%q already exists", header)
 	}
@@ -163,7 +169,7 @@ func (f *frame) AddColumn(c Column) error {
 	return nil
 }
 
-func (f *frame) GetColumn(header string) (Column, error) {
+func (f *frame) Column(header string) (Column, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -174,14 +180,14 @@ func (f *frame) GetColumn(header string) (Column, error) {
 	return f.columns[idx], nil
 }
 
-func (f *frame) GetColumns() []Column {
+func (f *frame) Columns() []Column {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
 	return f.columns
 }
 
-func (f *frame) GetColumnNumber() int {
+func (f *frame) CountColumn() int {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -205,6 +211,77 @@ func (f *frame) UpdateHeader(origHeader, newHeader string) error {
 	return nil
 }
 
+func (f *frame) MoveColumn(header string, target int) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	if target < 0 || target > len(f.headerTo) {
+		return fmt.Errorf("%d is out of range", target)
+	}
+
+	oldi, ok := f.headerTo[header]
+	if !ok {
+		return fmt.Errorf("%q does not exist", header)
+	}
+	if target == oldi {
+		// no need to insert
+		return nil
+	}
+
+	var copied []Column
+	switch {
+	case target < oldi: // move somewhere to left
+		// e.g. arr1, oldi 7, target 2
+		// 0  1 | 2  3  4  5  6  [7]  8  9
+		// 1. copy[:2]
+		// 2. arr2[2] = arr1[7]
+		// 3. copy[3:7]
+		// 4. copy[8:]
+		copied = make([]Column, target)
+		if target == 0 {
+			copied = []Column{}
+		} else {
+			copy(copied, f.columns[:target])
+		}
+		copied = append(copied, f.columns[oldi])
+		// at this point, moved until 'target' index
+		for i, c := range f.columns {
+			if i < target || i == oldi { // already moved
+				continue
+			}
+			copied = append(copied, c)
+		}
+
+	case oldi < target: // move somewhere to right
+		// e.g. arr1, oldi 2, target 8
+		// 0  1 [2] 3  4  5  6  7 | 8  9
+		// 1. copy[:2]
+		// 2. copy[3:8]
+		// 3. arr2[7] = arr1[2]
+		// 4. copy[8:]
+		copied = make([]Column, oldi)
+		if oldi == 0 {
+			copied = []Column{}
+		} else {
+			copy(copied, f.columns[:oldi])
+		}
+		copied = append(copied, f.columns[oldi+1:target]...)
+		for i, c := range f.columns {
+			if i != oldi && i < target { // already moved
+				continue
+			}
+			copied = append(copied, c)
+		}
+	}
+	f.columns = copied
+
+	// update column index
+	for i, col := range f.columns {
+		f.headerTo[col.Header()] = i
+	}
+	return nil
+}
+
 func (f *frame) DeleteColumn(header string) bool {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -225,12 +302,12 @@ func (f *frame) DeleteColumn(header string) bool {
 	// update headerTo
 	f.headerTo = make(map[string]int)
 	for i, c := range f.columns {
-		f.headerTo[c.GetHeader()] = i
+		f.headerTo[c.Header()] = i
 	}
 	return true
 }
 
-func (f *frame) ToRows() ([]string, [][]string) {
+func (f *frame) Rows() ([]string, [][]string) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -241,7 +318,7 @@ func (f *frame) ToRows() ([]string, [][]string) {
 
 	var rowN int
 	for _, col := range f.columns {
-		n := col.RowNumber()
+		n := col.CountRow()
 		if rowN < n {
 			rowN = n
 		}
@@ -252,10 +329,10 @@ func (f *frame) ToRows() ([]string, [][]string) {
 	for rowIdx := 0; rowIdx < rowN; rowIdx++ {
 		row := make([]string, colN)
 		for colIdx, col := range f.columns { // rowIdx * colIdx
-			v, err := col.GetValue(rowIdx)
+			v, err := col.Value(rowIdx)
 			var elem string
 			if err == nil {
-				elem, _ = v.ToString()
+				elem, _ = v.String()
 			}
 			row[colIdx] = elem
 		}
@@ -265,7 +342,7 @@ func (f *frame) ToRows() ([]string, [][]string) {
 	return headers, rows
 }
 
-func (f *frame) ToCSV(fpath string) error {
+func (f *frame) CSV(fpath string) error {
 	fi, err := os.OpenFile(fpath, os.O_RDWR|os.O_TRUNC, 0777)
 	if err != nil {
 		fi, err = os.Create(fpath)
@@ -277,7 +354,7 @@ func (f *frame) ToCSV(fpath string) error {
 
 	wr := csv.NewWriter(fi)
 
-	headers, rows := f.ToRows()
+	headers, rows := f.Rows()
 	if err := wr.Write(headers); err != nil {
 		return err
 	}
@@ -330,7 +407,7 @@ func (f *frame) Sort(header string, st SortType, so SortOption) error {
 		}
 	}
 
-	headers, rows := f.ToRows()
+	headers, rows := f.Rows()
 	SortBy(
 		rows,
 		lesses...,

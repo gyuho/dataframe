@@ -8,29 +8,29 @@ import (
 
 // Column represents column-based data.
 type Column interface {
-	// RowNumber returns the number of rows of the Column.
-	RowNumber() int
+	// CountRow returns the number of rows of the Column.
+	CountRow() int
 
-	// GetHeader returns the header of the Column.
-	GetHeader() string
+	// Header returns the header of the Column.
+	Header() string
 
 	// UpdateHeader updates the header of the Column.
 	UpdateHeader(header string)
 
-	// GetValue returns the Value in the row. It returns error if the row
+	// Value returns the Value in the row. It returns error if the row
 	// is out of index range.
-	GetValue(row int) (Value, error)
+	Value(row int) (Value, error)
 
-	// SetValue overwrites the value
-	SetValue(row int, v Value) error
+	// Set overwrites the value
+	Set(row int, v Value) error
 
-	// FindValue finds the first Value, and returns the row number.
+	// FindFirst finds the first Value, and returns the row number.
 	// It returns -1 and false if the value does not exist.
-	FindValue(v Value) (int, bool)
+	FindFirst(v Value) (int, bool)
 
-	// FindLastValue finds the last Value, and returns the row number.
+	// FindLast finds the last Value, and returns the row number.
 	// It returns -1 and false if the value does not exist.
-	FindLastValue(v Value) (int, bool)
+	FindLast(v Value) (int, bool)
 
 	// Front returns the first row Value.
 	Front() (Value, bool)
@@ -50,14 +50,14 @@ type Column interface {
 	// PushBack appends the Value to the Column.
 	PushBack(v Value) int
 
-	// DeleteRow deletes a row by index.
-	DeleteRow(row int) (Value, error)
+	// Delete deletes a row by index.
+	Delete(row int) (Value, error)
 
-	// DeleteRows deletes rows by index [start, end).
-	DeleteRows(start, end int) error
+	// Deletes deletes rows by index [start, end).
+	Deletes(start, end int) error
 
-	// KeepRows keeps the rows by index [start, end).
-	KeepRows(start, end int) error
+	// Keep keeps the rows by index [start, end).
+	Keep(start, end int) error
 
 	// PopFront deletes the value at front.
 	PopFront() (Value, bool)
@@ -94,6 +94,7 @@ type column struct {
 	data   []Value
 }
 
+// NewColumn creates a new Column.
 func NewColumn(hd string) Column {
 	return &column{
 		header: hd,
@@ -102,14 +103,14 @@ func NewColumn(hd string) Column {
 	}
 }
 
-func (c *column) RowNumber() int {
+func (c *column) CountRow() int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	return c.size
 }
 
-func (c *column) GetHeader() string {
+func (c *column) Header() string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -123,7 +124,7 @@ func (c *column) UpdateHeader(header string) {
 	c.header = header
 }
 
-func (c *column) GetValue(row int) (Value, error) {
+func (c *column) Value(row int) (Value, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -133,7 +134,7 @@ func (c *column) GetValue(row int) (Value, error) {
 	return c.data[row], nil
 }
 
-func (c *column) SetValue(row int, v Value) error {
+func (c *column) Set(row int, v Value) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -144,7 +145,7 @@ func (c *column) SetValue(row int, v Value) error {
 	return nil
 }
 
-func (c *column) FindValue(v Value) (int, bool) {
+func (c *column) FindFirst(v Value) (int, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -156,7 +157,7 @@ func (c *column) FindValue(v Value) (int, bool) {
 	return -1, false
 }
 
-func (c *column) FindLastValue(v Value) (int, bool) {
+func (c *column) FindLast(v Value) (int, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -246,7 +247,7 @@ func (c *column) PushBack(v Value) int {
 	return c.size
 }
 
-func (c *column) DeleteRow(row int) (Value, error) {
+func (c *column) Delete(row int) (Value, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -260,7 +261,7 @@ func (c *column) DeleteRow(row int) (Value, error) {
 	return v, nil
 }
 
-func (c *column) DeleteRows(start, end int) error {
+func (c *column) Deletes(start, end int) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -290,7 +291,7 @@ func (c *column) DeleteRows(start, end int) error {
 	return nil
 }
 
-func (c *column) KeepRows(start, end int) error {
+func (c *column) Keep(start, end int) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

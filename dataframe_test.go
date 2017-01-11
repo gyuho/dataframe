@@ -16,12 +16,12 @@ func TestFrame(t *testing.T) {
 		}
 	}
 	c1.UpdateHeader("aaa")
-	if c1.GetHeader() != "aaa" {
-		t.Fatalf("expected 'aaa', got %v", c1.GetHeader())
+	if c1.Header() != "aaa" {
+		t.Fatalf("expected 'aaa', got %v", c1.Header())
 	}
 	c1.UpdateHeader("second1")
-	if c1.GetHeader() != "second1" {
-		t.Fatalf("expected 'second1', got %v", c1.GetHeader())
+	if c1.Header() != "second1" {
+		t.Fatalf("expected 'second1', got %v", c1.Header())
 	}
 
 	c2 := NewColumn("second2")
@@ -46,45 +46,45 @@ func TestFrame(t *testing.T) {
 		t.Fatal("expected error")
 	}
 
-	if c, err := fr.GetColumn("second1"); c == nil || err != nil {
+	if c, err := fr.Column("second1"); c == nil || err != nil {
 		t.Fatal(err)
 	}
-	if c, err := fr.GetColumn("second2"); c == nil || err != nil {
+	if c, err := fr.Column("second2"); c == nil || err != nil {
 		t.Fatal(err)
 	}
 
 	if err := fr.UpdateHeader("second2", "aaa"); err != nil {
 		t.Fatal(err)
 	}
-	if c, err := fr.GetColumn("aaa"); c == nil || err != nil {
+	if c, err := fr.Column("aaa"); c == nil || err != nil {
 		t.Fatal(err)
 	}
-	if hs := fr.GetHeader(); !reflect.DeepEqual(hs, []string{"second1", "aaa"}) {
+	if hs := fr.Headers(); !reflect.DeepEqual(hs, []string{"second1", "aaa"}) {
 		t.Fatalf("expected equal, got %q != %q", hs, []string{"second1", "aaa"})
 	}
 
 	if err := fr.UpdateHeader("aaa", "second2"); err != nil {
 		t.Fatal(err)
 	}
-	if hs := fr.GetHeader(); !reflect.DeepEqual(hs, []string{"second1", "second2"}) {
+	if hs := fr.Headers(); !reflect.DeepEqual(hs, []string{"second1", "second2"}) {
 		t.Fatalf("expected equal, got %q != %q", hs, []string{"second1", "second2"})
 	}
 	if ok := fr.DeleteColumn("second1"); !ok {
 		t.Fatalf("expected 'true', got %v", ok)
 	}
-	if cd := fr.GetColumnNumber(); cd != 1 {
+	if cd := fr.CountColumn(); cd != 1 {
 		t.Fatalf("expected 1, got %v", cd)
 	}
 	if ok := fr.DeleteColumn("second1"); ok {
 		t.Fatalf("expected 'false', got %v", ok)
 	}
-	if c, err := fr.GetColumn("second1"); c != nil || err == nil {
+	if c, err := fr.Column("second1"); c != nil || err == nil {
 		t.Fatalf("expected <nil, 'second1 does not exist'>, but <%v, %v>", c, err)
 	}
 	if ok := fr.DeleteColumn("second2"); !ok {
 		t.Fatalf("expected 'true', got %v", ok)
 	}
-	if cd := fr.GetColumnNumber(); cd != 0 {
+	if cd := fr.CountColumn(); cd != 0 {
 		t.Fatalf("expected 0, got %v", cd)
 	}
 }
@@ -98,29 +98,29 @@ func TestNewFromCSV(t *testing.T) {
 		t.Fatal(err)
 	}
 	cols := []string{"second", "avg_latency_ms_consul", "throughput_consul", "cumulative_throughput_consul", "avg_cpu_consul", "avg_memory_mb_consul", "avg_latency_ms_etcd3", "throughput_etcd3", "cumulative_throughput_etcd3", "avg_cpu_etcd3", "avg_memory_mb_etcd3", "avg_latency_ms_etcd2", "throughput_etcd2", "cumulative_throughput_etcd2", "avg_cpu_etcd2", "avg_memory_mb_etcd2", "avg_latency_ms_zk", "throughput_zk", "cumulative_throughput_zk", "avg_cpu_zk", "avg_memory_mb_zk"}
-	if !reflect.DeepEqual(fr.GetHeader(), cols) {
-		t.Fatalf("expected %q, got %q", cols, fr.GetHeader())
+	if !reflect.DeepEqual(fr.Headers(), cols) {
+		t.Fatalf("expected %q, got %q", cols, fr.Headers())
 	}
-	ac, err := fr.GetColumn("avg_latency_ms_etcd3")
+	ac, err := fr.Column("avg_latency_ms_etcd3")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if v, err := ac.GetValue(229); !v.IsNil() || err != nil {
+	if v, err := ac.Value(229); !v.IsNil() || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v.IsNil(), err)
 	}
-	if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("4.484004")) || err != nil {
+	if v, err := ac.Value(0); v.IsNil() || !v.EqualTo(NewStringValue("4.484004")) || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v, err)
 	}
-	ac2, err := fr.GetColumn("avg_latency_ms_etcd2")
+	ac2, err := fr.Column("avg_latency_ms_etcd2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ac.RowNumber() != ac2.RowNumber() {
-		t.Fatalf("expected equal %v != %v", ac.RowNumber(), ac2.RowNumber())
+	if ac.CountRow() != ac2.CountRow() {
+		t.Fatalf("expected equal %v != %v", ac.CountRow(), ac2.CountRow())
 	}
 
 	fpath := "test.csv"
-	if err := fr.ToCSV(fpath); err != nil {
+	if err := fr.CSV(fpath); err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(fpath)
@@ -134,25 +134,25 @@ func TestNewFromCSV(t *testing.T) {
 			t.Fatal(err)
 		}
 		cols := []string{"second", "avg_latency_ms_consul", "throughput_consul", "cumulative_throughput_consul", "avg_cpu_consul", "avg_memory_mb_consul", "avg_latency_ms_etcd3", "throughput_etcd3", "cumulative_throughput_etcd3", "avg_cpu_etcd3", "avg_memory_mb_etcd3", "avg_latency_ms_etcd2", "throughput_etcd2", "cumulative_throughput_etcd2", "avg_cpu_etcd2", "avg_memory_mb_etcd2", "avg_latency_ms_zk", "throughput_zk", "cumulative_throughput_zk", "avg_cpu_zk", "avg_memory_mb_zk"}
-		if !reflect.DeepEqual(fr.GetHeader(), cols) {
-			t.Fatalf("expected %q, got %q", cols, fr.GetHeader())
+		if !reflect.DeepEqual(fr.Headers(), cols) {
+			t.Fatalf("expected %q, got %q", cols, fr.Headers())
 		}
-		ac, err := fr.GetColumn("avg_latency_ms_etcd3")
+		ac, err := fr.Column("avg_latency_ms_etcd3")
 		if err != nil {
 			t.Fatal(err)
 		}
-		if v, err := ac.GetValue(229); !v.IsNil() || err != nil {
+		if v, err := ac.Value(229); !v.IsNil() || err != nil {
 			t.Fatalf("expected <nil, nil>, got <%v, %v>", v.IsNil(), err)
 		}
-		if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("4.484004")) || err != nil {
+		if v, err := ac.Value(0); v.IsNil() || !v.EqualTo(NewStringValue("4.484004")) || err != nil {
 			t.Fatalf("expected <nil, nil>, got <%v, %v>", v, err)
 		}
-		ac2, err := fr.GetColumn("avg_latency_ms_etcd2")
+		ac2, err := fr.Column("avg_latency_ms_etcd2")
 		if err != nil {
 			t.Fatal(err)
 		}
-		if ac.RowNumber() != ac2.RowNumber() {
-			t.Fatalf("expected equal %v != %v", ac.RowNumber(), ac2.RowNumber())
+		if ac.CountRow() != ac2.CountRow() {
+			t.Fatalf("expected equal %v != %v", ac.CountRow(), ac2.CountRow())
 		}
 	}
 }
@@ -162,13 +162,13 @@ func TestNewFromRows(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	header, rows := fr.ToRows()
+	header, rows := fr.Rows()
 	fr2, err := NewFromRows(header, rows)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fpath := "test.csv"
-	if err := fr2.ToCSV(fpath); err != nil {
+	if err := fr2.CSV(fpath); err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(fpath)
@@ -178,46 +178,46 @@ func TestNewFromRows(t *testing.T) {
 		t.Fatal(err)
 	}
 	cols := []string{"second", "avg_latency_ms_consul", "throughput_consul", "cumulative_throughput_consul", "avg_cpu_consul", "avg_memory_mb_consul", "avg_latency_ms_etcd3", "throughput_etcd3", "cumulative_throughput_etcd3", "avg_cpu_etcd3", "avg_memory_mb_etcd3", "avg_latency_ms_etcd2", "throughput_etcd2", "cumulative_throughput_etcd2", "avg_cpu_etcd2", "avg_memory_mb_etcd2", "avg_latency_ms_zk", "throughput_zk", "cumulative_throughput_zk", "avg_cpu_zk", "avg_memory_mb_zk"}
-	if !reflect.DeepEqual(fr.GetHeader(), cols) {
-		t.Fatalf("expected %q, got %q", cols, fr.GetHeader())
+	if !reflect.DeepEqual(fr.Headers(), cols) {
+		t.Fatalf("expected %q, got %q", cols, fr.Headers())
 	}
-	ac, err := fr.GetColumn("avg_latency_ms_etcd3")
+	ac, err := fr.Column("avg_latency_ms_etcd3")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if v, err := ac.GetValue(229); !v.IsNil() || err != nil {
+	if v, err := ac.Value(229); !v.IsNil() || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v.IsNil(), err)
 	}
-	if v, err := ac.GetValue(0); v.IsNil() || !v.EqualTo(NewStringValue("4.484004")) || err != nil {
+	if v, err := ac.Value(0); v.IsNil() || !v.EqualTo(NewStringValue("4.484004")) || err != nil {
 		t.Fatalf("expected <nil, nil>, got <%v, %v>", v, err)
 	}
-	ac2, err := fr.GetColumn("avg_latency_ms_etcd2")
+	ac2, err := fr.Column("avg_latency_ms_etcd2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ac.RowNumber() != ac2.RowNumber() {
-		t.Fatalf("expected equal %v != %v", ac.RowNumber(), ac2.RowNumber())
+	if ac.CountRow() != ac2.CountRow() {
+		t.Fatalf("expected equal %v != %v", ac.CountRow(), ac2.CountRow())
 	}
 }
 
-func TestDataFrameFindValue(t *testing.T) {
+func TestDataFrameFindFirst(t *testing.T) {
 	fr, err := NewFromCSV(nil, "testdata/bench-01-etcd-1-monitor.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
-	col, err := fr.GetColumn("unix_ts")
+	col, err := fr.Column("unix_ts")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if col.RowNumber() != 362 {
-		t.Fatalf("expected 362, got %d", col.RowNumber())
+	if col.CountRow() != 362 {
+		t.Fatalf("expected 362, got %d", col.CountRow())
 	}
 	minTS := "1458758226"
-	idx, ok := col.FindValue(NewStringValue(minTS))
+	idx, ok := col.FindFirst(NewStringValue(minTS))
 	if idx != 361 || !ok {
 		t.Fatalf("expected 361, true, got %d, %v", idx, ok)
 	}
-	v, err := col.GetValue(idx)
+	v, err := col.Value(idx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -225,24 +225,68 @@ func TestDataFrameFindValue(t *testing.T) {
 		t.Fatalf("unexpected: %v != %v", v, minTS)
 	}
 
-	if err := col.DeleteRows(0, 2); err != nil {
+	if err := col.Deletes(0, 2); err != nil {
 		t.Fatal(err)
 	}
-	if col.RowNumber() != 360 {
-		t.Fatalf("expected 360, got %d", col.RowNumber())
+	if col.CountRow() != 360 {
+		t.Fatalf("expected 360, got %d", col.CountRow())
 	}
 	{
-		idx, ok := col.FindValue(NewStringValue(minTS))
+		idx, ok := col.FindFirst(NewStringValue(minTS))
 		if idx != 359 || !ok {
 			t.Fatalf("expected 359, true, got %d, %v", idx, ok)
 		}
-		v, err := col.GetValue(idx)
+		v, err := col.Value(idx)
 		if err != nil {
 			t.Fatal(err)
 		}
 		if !v.EqualTo(NewStringValue(minTS)) {
 			t.Fatalf("unexpected: %v != %v", v, minTS)
 		}
+	}
+}
+
+func TestMoveColumn(t *testing.T) {
+	fr := New()
+	if err := fr.AddColumn(NewColumn("0")); err != nil {
+		t.Fatal(err)
+	}
+	if err := fr.AddColumn(NewColumn("1")); err != nil {
+		t.Fatal(err)
+	}
+	if err := fr.AddColumn(NewColumn("2")); err != nil {
+		t.Fatal(err)
+	}
+	if err := fr.AddColumn(NewColumn("3")); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := fr.MoveColumn("1", 0); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual([]string{"1", "0", "2", "3"}, fr.Headers()) {
+		t.Fatalf("header expected %+v, got %+v", []string{"1", "0", "2", "3"}, fr.Headers())
+	}
+
+	if err := fr.MoveColumn("1", 3); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual([]string{"0", "2", "1", "3"}, fr.Headers()) {
+		t.Fatalf("header expected %+v, got %+v", []string{"0", "2", "1", "3"}, fr.Headers())
+	}
+
+	if err := fr.MoveColumn("1", 1); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual([]string{"0", "1", "2", "3"}, fr.Headers()) {
+		t.Fatalf("header expected %+v, got %+v", []string{"0", "1", "2", "3"}, fr.Headers())
+	}
+
+	if err := fr.MoveColumn("3", 1); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual([]string{"0", "3", "1", "2"}, fr.Headers()) {
+		t.Fatalf("header expected %+v, got %+v", []string{"0", "3", "1", "2"}, fr.Headers())
 	}
 }
 
@@ -255,7 +299,7 @@ func TestSort(t *testing.T) {
 		t.Fatal(err)
 	}
 	fpath := "test.csv"
-	if err := fr.ToCSV(fpath); err != nil {
+	if err := fr.CSV(fpath); err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(fpath)
