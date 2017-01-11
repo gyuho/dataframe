@@ -9,24 +9,24 @@ import (
 
 func TestValue(t *testing.T) {
 	v1 := NewStringValue("1")
-	if v, ok := v1.ToNumber(); !ok {
+	if v, ok := v1.Number(); !ok {
 		t.Fatalf("expected number 1, got %v", v)
 	}
 
 	v2 := NewStringValue("2.2")
-	if v, ok := v2.ToNumber(); !ok || v != 2.2 {
+	if v, ok := v2.Number(); !ok || v != 2.2 {
 		t.Fatalf("expected number 2.2, got %v", v)
 	}
 
 	v3t := time.Now().String()
 	v3 := NewStringValue(v3t)
-	if v, ok := v3.ToTime("2006-01-02 15:04:05 -0700 MST"); !ok {
+	if v, ok := v3.Time("2006-01-02 15:04:05 -0700 MST"); !ok {
 		t.Fatalf("expected time %s, got %v", v3t, v)
 	}
 
 	v4t := time.Now().String()[:19]
 	v4 := NewStringValue(v4t)
-	if v, ok := v4.ToTime("2006-01-02 15:04:05"); !ok {
+	if v, ok := v4.Time("2006-01-02 15:04:05"); !ok {
 		t.Fatalf("expected time %s, got %v", v4t, v)
 	}
 
@@ -93,8 +93,8 @@ func TestByDurationAscending(t *testing.T) {
 		vs = append(vs, NewStringValue(fmt.Sprintf("%s", time.Duration(i)*time.Second)))
 	}
 	sort.Sort(ByDurationAscending(vs))
-	if !vs[0].EqualTo(NewStringValue("0")) {
-		t.Fatalf("expected '0', got %v", vs[0])
+	if !vs[0].EqualTo(NewStringValue("0s")) {
+		t.Fatalf("expected '0s', got %v", vs[0])
 	}
 }
 
