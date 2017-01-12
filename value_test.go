@@ -18,6 +18,11 @@ func TestValue(t *testing.T) {
 		t.Fatalf("expected number 2.2, got %v", v)
 	}
 
+	v2c := v2.Copy()
+	if !v2.EqualTo(v2c) {
+		t.Fatalf("expected equal, got %v", v2.EqualTo(v2c))
+	}
+
 	v3t := time.Now().String()
 	v3 := NewStringValue(v3t)
 	if v, ok := v3.Time("2006-01-02 15:04:05 -0700 MST"); !ok {

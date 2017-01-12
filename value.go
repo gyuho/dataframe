@@ -25,6 +25,9 @@ type Value interface {
 
 	// EqualTo returns true if the Value is equal to v.
 	EqualTo(v Value) bool
+
+	// Copy copies Value.
+	Copy() Value
 }
 
 func NewStringValue(v interface{}) Value {
@@ -77,6 +80,10 @@ func (s String) IsNil() bool {
 func (s String) EqualTo(v Value) bool {
 	tv, ok := v.(String)
 	return ok && s == tv
+}
+
+func (s String) Copy() Value {
+	return s
 }
 
 type ByStringAscending []Value

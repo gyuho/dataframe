@@ -68,6 +68,9 @@ type Column interface {
 	// Appends adds the Value to the Column until it reaches the target size.
 	Appends(v Value, targetSize int) error
 
+	// Copy deep-copies a column.
+	Copy() Column
+
 	// SortByStringAscending sorts Column in string ascending order.
 	SortByStringAscending()
 
@@ -357,6 +360,18 @@ func (c *column) Appends(v Value, targetSize int) error {
 		c.size++
 	}
 	return nil
+}
+
+func (c *column) Copy() Column {
+	c2 := &column{
+		header: c.header,
+		size:   c.size,
+		data:   make([]Value, len(c.data)),
+	}
+	for i := range c.data {
+		c2.data[i] = c.data[i].Copy()
+	}
+	return c2
 }
 
 func (c *column) SortByStringAscending()    { sort.Sort(ByStringAscending(c.data)) }
