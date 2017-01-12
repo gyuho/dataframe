@@ -347,9 +347,9 @@ func TestFromColumns(t *testing.T) {
 		t.Fatalf("expected %v, got %v", []string{"A", "B", "C"}, header)
 	}
 	expected := [][]string{
-		[]string{"1", "1", "1"},
-		[]string{"0", "2", "2"},
-		[]string{"0", "0", "3"},
+		{"1", "1", "1"},
+		{"0", "2", "2"},
+		{"0", "0", "3"},
 	}
 	if !reflect.DeepEqual(rows, expected) {
 		t.Fatalf("expected %v, got %v", expected, rows)
@@ -376,9 +376,9 @@ func TestFromColumnsDifferentRowNumber(t *testing.T) {
 		t.Fatalf("expected %v, got %v", []string{"A", "B", "C"}, header)
 	}
 	expected := [][]string{
-		[]string{"1", "1", "1"},
-		[]string{"", "2", "2"},
-		[]string{"", "", "3"},
+		{"1", "1", "1"},
+		{"", "2", "2"},
+		{"", "", "3"},
 	}
 	if !reflect.DeepEqual(rows, expected) {
 		t.Fatalf("expected %v, got %v", expected, rows)
