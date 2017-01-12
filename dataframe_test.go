@@ -288,6 +288,28 @@ func TestMoveColumn(t *testing.T) {
 	if !reflect.DeepEqual([]string{"0", "3", "1", "2"}, fr.Headers()) {
 		t.Fatalf("header expected %+v, got %+v", []string{"0", "3", "1", "2"}, fr.Headers())
 	}
+
+	if err := fr.AddColumn(NewColumn("A")); err != nil {
+		t.Fatal(err)
+	}
+	if err := fr.AddColumn(NewColumn("B")); err != nil {
+		t.Fatal(err)
+	}
+	if err := fr.AddColumn(NewColumn("C")); err != nil {
+		t.Fatal(err)
+	}
+	if err := fr.MoveColumn("A", 1); err != nil {
+		t.Fatal(err)
+	}
+	if err := fr.MoveColumn("B", 1); err != nil {
+		t.Fatal(err)
+	}
+	if err := fr.MoveColumn("C", 1); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual([]string{"0", "C", "B", "A", "3", "1", "2"}, fr.Headers()) {
+		t.Fatalf("header expected %+v, got %+v", []string{"0", "C", "B", "A", "3", "1", "2"}, fr.Headers())
+	}
 }
 
 func TestSort(t *testing.T) {
