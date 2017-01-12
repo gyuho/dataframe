@@ -355,3 +355,32 @@ func TestFromColumns(t *testing.T) {
 		t.Fatalf("expected %v, got %v", expected, rows)
 	}
 }
+
+func TestFromColumnsDifferentRowNumber(t *testing.T) {
+	colA := NewColumn("A")
+	colA.PushBack(NewStringValue("1"))
+	colB := NewColumn("B")
+	colB.PushBack(NewStringValue("1"))
+	colB.PushBack(NewStringValue("2"))
+	colC := NewColumn("C")
+	colC.PushBack(NewStringValue("1"))
+	colC.PushBack(NewStringValue("2"))
+	colC.PushBack(NewStringValue("3"))
+
+	fr, err := FromColumns(nil, colA, colB, colC)
+	if err != nil {
+		t.Fatal(err)
+	}
+	header, rows := fr.Rows()
+	if !reflect.DeepEqual(header, []string{"A", "B", "C"}) {
+		t.Fatalf("expected %v, got %v", []string{"A", "B", "C"}, header)
+	}
+	expected := [][]string{
+		[]string{"1", "1", "1"},
+		[]string{"", "2", "2"},
+		[]string{"", "", "3"},
+	}
+	if !reflect.DeepEqual(rows, expected) {
+		t.Fatalf("expected %v, got %v", expected, rows)
+	}
+}

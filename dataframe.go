@@ -426,10 +426,9 @@ func (f *frame) Sort(header string, st SortType, so SortOption) error {
 }
 
 // FromColumns combines multiple columns into one data frame.
-// It makes all columns have the same row number
-// by inserting zero values where the row number is short
-// compared to the one with the msot row number.
-// The columns are deep-copied to the Frame.
+// If zero Value is not nil, it makes all columns have the same row number
+// by inserting zero values where the row number is short compared to the
+// one with the msot row number. The columns are deep-copied to the Frame.
 func FromColumns(zero Value, cols ...Column) (Frame, error) {
 	maxEndIndex := 0
 	columns := make([]Column, len(cols))
@@ -447,24 +446,25 @@ func FromColumns(zero Value, cols ...Column) (Frame, error) {
 	maxEndIndex--
 	maxSize := maxEndIndex + 1
 
-	// make all columns have same row number
-	for _, col := range columns {
-		rNum := col.CountRow()
-		if rNum < maxSize { // fill-in with zero values
-			for i := 0; i < maxSize-rNum; i++ {
-				col.PushBack(zero)
+	if zero != nil {
+		// make all columns have same row number
+		for _, col := range columns {
+			rNum := col.CountRow()
+			if rNum < maxSize { // fill-in with zero values
+				for i := 0; i < maxSize-rNum; i++ {
+					col.PushBack(zero)
+				}
+			}
+			if rNum > maxSize {
+				return nil, fmt.Errorf("something wrong with minimum end index %d (%q has %d rows)", maxEndIndex, col.Header(), rNum)
 			}
 		}
-		if rNum > maxSize {
-			return nil, fmt.Errorf("something wrong with minimum end index %d (%q has %d rows)", maxEndIndex, col.Header(), rNum)
-		}
-	}
-
-	// double-check
-	rNum := columns[0].CountRow()
-	for _, col := range columns {
-		if rNum != col.CountRow() {
-			return nil, fmt.Errorf("%q has %d rows (expected %d rows as %q)", col.Header(), col.CountRow(), rNum, columns[0].Header())
+		// double-check
+		rNum := columns[0].CountRow()
+		for _, col := range columns {
+			if rNum != col.CountRow() {
+				return nil, fmt.Errorf("%q has %d rows (expected %d rows as %q)", col.Header(), col.CountRow(), rNum, columns[0].Header())
+			}
 		}
 	}
 
