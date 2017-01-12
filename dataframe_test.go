@@ -200,6 +200,64 @@ func TestNewFromRows(t *testing.T) {
 	}
 }
 
+func TestNewFromColumns(t *testing.T) {
+	colA := NewColumn("A")
+	colA.PushBack(NewStringValue("1"))
+	colB := NewColumn("B")
+	colB.PushBack(NewStringValue("1"))
+	colB.PushBack(NewStringValue("2"))
+	colC := NewColumn("C")
+	colC.PushBack(NewStringValue("1"))
+	colC.PushBack(NewStringValue("2"))
+	colC.PushBack(NewStringValue("3"))
+
+	fr, err := NewFromColumns(NewStringValue(0), colA, colB, colC)
+	if err != nil {
+		t.Fatal(err)
+	}
+	header, rows := fr.Rows()
+	if !reflect.DeepEqual(header, []string{"A", "B", "C"}) {
+		t.Fatalf("expected %v, got %v", []string{"A", "B", "C"}, header)
+	}
+	expected := [][]string{
+		{"1", "1", "1"},
+		{"0", "2", "2"},
+		{"0", "0", "3"},
+	}
+	if !reflect.DeepEqual(rows, expected) {
+		t.Fatalf("expected %v, got %v", expected, rows)
+	}
+}
+
+func TestNewFromColumnsDifferentRowNumber(t *testing.T) {
+	colA := NewColumn("A")
+	colA.PushBack(NewStringValue("1"))
+	colB := NewColumn("B")
+	colB.PushBack(NewStringValue("1"))
+	colB.PushBack(NewStringValue("2"))
+	colC := NewColumn("C")
+	colC.PushBack(NewStringValue("1"))
+	colC.PushBack(NewStringValue("2"))
+	colC.PushBack(NewStringValue("3"))
+
+	fr, err := NewFromColumns(nil, colA, colB, colC)
+	if err != nil {
+		t.Fatal(err)
+	}
+	header, rows := fr.Rows()
+	if !reflect.DeepEqual(header, []string{"A", "B", "C"}) {
+		t.Fatalf("expected %v, got %v", []string{"A", "B", "C"}, header)
+	}
+	expected := [][]string{
+		{"1", "1", "1"},
+		{"", "2", "2"},
+		{"", "", "3"},
+	}
+	if !reflect.DeepEqual(rows, expected) {
+		t.Fatalf("expected %v, got %v", expected, rows)
+	}
+}
+
 func TestDataFrameFindFirst(t *testing.T) {
 	fr, err := NewFromCSV(nil, "testdata/bench-01-etcd-1-monitor.csv")
 	if err != nil {
@@ -325,62 +383,4 @@ func TestSort(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(fpath)
-}
-
-func TestFromColumns(t *testing.T) {
-	colA := NewColumn("A")
-	colA.PushBack(NewStringValue("1"))
-	colB := NewColumn("B")
-	colB.PushBack(NewStringValue("1"))
-	colB.PushBack(NewStringValue("2"))
-	colC := NewColumn("C")
-	colC.PushBack(NewStringValue("1"))
-	colC.PushBack(NewStringValue("2"))
-	colC.PushBack(NewStringValue("3"))
-
-	fr, err := FromColumns(NewStringValue(0), colA, colB, colC)
-	if err != nil {
-		t.Fatal(err)
-	}
-	header, rows := fr.Rows()
-	if !reflect.DeepEqual(header, []string{"A", "B", "C"}) {
-		t.Fatalf("expected %v, got %v", []string{"A", "B", "C"}, header)
-	}
-	expected := [][]string{
-		{"1", "1", "1"},
-		{"0", "2", "2"},
-		{"0", "0", "3"},
-	}
-	if !reflect.DeepEqual(rows, expected) {
-		t.Fatalf("expected %v, got %v", expected, rows)
-	}
-}
-
-func TestFromColumnsDifferentRowNumber(t *testing.T) {
-	colA := NewColumn("A")
-	colA.PushBack(NewStringValue("1"))
-	colB := NewColumn("B")
-	colB.PushBack(NewStringValue("1"))
-	colB.PushBack(NewStringValue("2"))
-	colC := NewColumn("C")
-	colC.PushBack(NewStringValue("1"))
-	colC.PushBack(NewStringValue("2"))
-	colC.PushBack(NewStringValue("3"))
-
-	fr, err := FromColumns(nil, colA, colB, colC)
-	if err != nil {
-		t.Fatal(err)
-	}
-	header, rows := fr.Rows()
-	if !reflect.DeepEqual(header, []string{"A", "B", "C"}) {
-		t.Fatalf("expected %v, got %v", []string{"A", "B", "C"}, header)
-	}
-	expected := [][]string{
-		{"1", "1", "1"},
-		{"", "2", "2"},
-		{"", "", "3"},
-	}
-	if !reflect.DeepEqual(rows, expected) {
-		t.Fatalf("expected %v, got %v", expected, rows)
-	}
 }

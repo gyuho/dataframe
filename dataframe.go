@@ -145,6 +145,58 @@ func NewFromCSV(header []string, fpath string) (Frame, error) {
 	return NewFromRows(header, rows)
 }
 
+// NewFromColumns combines multiple columns into one data frame.
+// If zero Value is not nil, it makes all columns have the same row number
+// by inserting zero values where the row number is short compared to the
+// one with the msot row number. The columns are deep-copied to the Frame.
+func NewFromColumns(zero Value, cols ...Column) (Frame, error) {
+	maxEndIndex := 0
+	columns := make([]Column, len(cols))
+	for i, col := range cols {
+		columns[i] = col.Copy()
+
+		if i == 0 {
+			maxEndIndex = col.CountRow()
+		}
+		if maxEndIndex < col.CountRow() {
+			maxEndIndex = col.CountRow()
+		}
+	}
+	// this is index, so decrement by 1 to make it as valid index
+	maxEndIndex--
+	maxSize := maxEndIndex + 1
+
+	if zero != nil {
+		// make all columns have same row number
+		for _, col := range columns {
+			rNum := col.CountRow()
+			if rNum < maxSize { // fill-in with zero values
+				for i := 0; i < maxSize-rNum; i++ {
+					col.PushBack(zero)
+				}
+			}
+			if rNum > maxSize {
+				return nil, fmt.Errorf("something wrong with minimum end index %d (%q has %d rows)", maxEndIndex, col.Header(), rNum)
+			}
+		}
+		// double-check
+		rNum := columns[0].CountRow()
+		for _, col := range columns {
+			if rNum != col.CountRow() {
+				return nil, fmt.Errorf("%q has %d rows (expected %d rows as %q)", col.Header(), col.CountRow(), rNum, columns[0].Header())
+			}
+		}
+	}
+
+	combined := New()
+	for _, col := range columns {
+		if err := combined.AddColumn(col); err != nil {
+			return nil, err
+		}
+	}
+	return combined, nil
+}
+
 func (f *frame) Headers() []string {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -423,56 +475,4 @@ func (f *frame) Sort(header string, st SortType, so SortOption) error {
 	}
 	*f = *v
 	return nil
-}
-
-// FromColumns combines multiple columns into one data frame.
-// If zero Value is not nil, it makes all columns have the same row number
-// by inserting zero values where the row number is short compared to the
-// one with the msot row number. The columns are deep-copied to the Frame.
-func FromColumns(zero Value, cols ...Column) (Frame, error) {
-	maxEndIndex := 0
-	columns := make([]Column, len(cols))
-	for i, col := range cols {
-		columns[i] = col.Copy()
-
-		if i == 0 {
-			maxEndIndex = col.CountRow()
-		}
-		if maxEndIndex < col.CountRow() {
-			maxEndIndex = col.CountRow()
-		}
-	}
-	// this is index, so decrement by 1 to make it as valid index
-	maxEndIndex--
-	maxSize := maxEndIndex + 1
-
-	if zero != nil {
-		// make all columns have same row number
-		for _, col := range columns {
-			rNum := col.CountRow()
-			if rNum < maxSize { // fill-in with zero values
-				for i := 0; i < maxSize-rNum; i++ {
-					col.PushBack(zero)
-				}
-			}
-			if rNum > maxSize {
-				return nil, fmt.Errorf("something wrong with minimum end index %d (%q has %d rows)", maxEndIndex, col.Header(), rNum)
-			}
-		}
-		// double-check
-		rNum := columns[0].CountRow()
-		for _, col := range columns {
-			if rNum != col.CountRow() {
-				return nil, fmt.Errorf("%q has %d rows (expected %d rows as %q)", col.Header(), col.CountRow(), rNum, columns[0].Header())
-			}
-		}
-	}
-
-	combined := New()
-	for _, col := range columns {
-		if err := combined.AddColumn(col); err != nil {
-			return nil, err
-		}
-	}
-	return combined, nil
 }
