@@ -3,7 +3,6 @@ package dataframe
 import (
 	"encoding/csv"
 	"fmt"
-	"os"
 	"sync"
 )
 
@@ -35,6 +34,11 @@ type Frame interface {
 
 	// CSV saves the Frame to a CSV file.
 	CSV(fpath string) error
+
+	// CSVHorizontal saves the Frame to a CSV file
+	// in a horizontal way. The first column is header.
+	// And data are aligned from left to right.
+	CSVHorizontal(fpath string) error
 
 	// Rows returns the header and data slices.
 	Rows() ([]string, [][]string)
@@ -126,7 +130,7 @@ func NewFromRows(header []string, rows [][]string) (Frame, error) {
 
 // NewFromCSV creates a new Frame from CSV.
 func NewFromCSV(header []string, fpath string) (Frame, error) {
-	f, err := os.OpenFile(fpath, os.O_RDONLY, 0444)
+	f, err := openToRead(fpath)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +138,12 @@ func NewFromCSV(header []string, fpath string) (Frame, error) {
 
 	rd := csv.NewReader(f)
 
-	// TODO: make this configurable
+	// FieldsPerRecord is the number of expected fields per record.
+	// If FieldsPerRecord is positive, Read requires each record to
+	// have the given number of fields. If FieldsPerRecord is 0, Read sets it to
+	// the number of fields in the first record, so that future records must
+	// have the same field count. If FieldsPerRecord is negative, no check is
+	// made and records may have a variable number of fields.
 	rd.FieldsPerRecord = -1
 
 	rows, err := rd.ReadAll()
@@ -156,10 +165,10 @@ func NewFromColumns(zero Value, cols ...Column) (Frame, error) {
 		columns[i] = col.Copy()
 
 		if i == 0 {
-			maxEndIndex = col.CountRow()
+			maxEndIndex = col.Count()
 		}
-		if maxEndIndex < col.CountRow() {
-			maxEndIndex = col.CountRow()
+		if maxEndIndex < col.Count() {
+			maxEndIndex = col.Count()
 		}
 	}
 	// this is index, so decrement by 1 to make it as valid index
@@ -169,7 +178,7 @@ func NewFromColumns(zero Value, cols ...Column) (Frame, error) {
 	if zero != nil {
 		// make all columns have same row number
 		for _, col := range columns {
-			rNum := col.CountRow()
+			rNum := col.Count()
 			if rNum < maxSize { // fill-in with zero values
 				for i := 0; i < maxSize-rNum; i++ {
 					col.PushBack(zero)
@@ -180,10 +189,10 @@ func NewFromColumns(zero Value, cols ...Column) (Frame, error) {
 			}
 		}
 		// double-check
-		rNum := columns[0].CountRow()
+		rNum := columns[0].Count()
 		for _, col := range columns {
-			if rNum != col.CountRow() {
-				return nil, fmt.Errorf("%q has %d rows (expected %d rows as %q)", col.Header(), col.CountRow(), rNum, columns[0].Header())
+			if rNum != col.Count() {
+				return nil, fmt.Errorf("%q has %d rows (expected %d rows as %q)", col.Header(), col.Count(), rNum, columns[0].Header())
 			}
 		}
 	}
@@ -370,7 +379,7 @@ func (f *frame) Rows() ([]string, [][]string) {
 
 	var rowN int
 	for _, col := range f.columns {
-		n := col.CountRow()
+		n := col.Count()
 		if rowN < n {
 			rowN = n
 		}
@@ -395,21 +404,41 @@ func (f *frame) Rows() ([]string, [][]string) {
 }
 
 func (f *frame) CSV(fpath string) error {
-	fi, err := os.OpenFile(fpath, os.O_RDWR|os.O_TRUNC, 0777)
+	file, err := openToOverwrite(fpath)
 	if err != nil {
-		fi, err = os.Create(fpath)
-		if err != nil {
-			return err
-		}
+		return err
 	}
-	defer fi.Close()
+	defer file.Close()
 
-	wr := csv.NewWriter(fi)
+	wr := csv.NewWriter(file)
 
 	headers, rows := f.Rows()
 	if err := wr.Write(headers); err != nil {
 		return err
 	}
+	if err := wr.WriteAll(rows); err != nil {
+		return err
+	}
+
+	wr.Flush()
+	return wr.Error()
+}
+
+func (f *frame) CSVHorizontal(fpath string) error {
+	var rows [][]string
+	for _, col := range f.columns {
+		row := []string{col.Header()}
+		row = append(row, col.Rows()...)
+		rows = append(rows, row)
+	}
+
+	file, err := openToOverwrite(fpath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	wr := csv.NewWriter(file)
 	if err := wr.WriteAll(rows); err != nil {
 		return err
 	}

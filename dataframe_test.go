@@ -2,7 +2,9 @@ package dataframe
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -89,6 +91,47 @@ func TestFrame(t *testing.T) {
 	}
 }
 
+func TestFrameCSVHorizontal(t *testing.T) {
+	c1 := NewColumn("A")
+	c1.PushBack(NewStringValue(1))
+	c2 := NewColumn("B")
+	c2.PushBack(NewStringValue(1))
+	c2.PushBack(NewStringValue(2))
+	c3 := NewColumn("C")
+	c3.PushBack(NewStringValue(1))
+	c3.PushBack(NewStringValue(2))
+	c3.PushBack(NewStringValue(3))
+	fr := New()
+	if err := fr.AddColumn(c1); err != nil {
+		t.Fatal(err)
+	}
+	if err := fr.AddColumn(c2); err != nil {
+		t.Fatal(err)
+	}
+	if err := fr.AddColumn(c3); err != nil {
+		t.Fatal(err)
+	}
+
+	fpath := filepath.Join(os.TempDir(), "test-horizontal-psn-frame.csv")
+	defer os.RemoveAll(fpath)
+
+	if err := fr.CSVHorizontal(fpath); err != nil {
+		t.Fatal(err)
+	}
+
+	bts, err := ioutil.ReadFile(fpath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := `A,1
+B,1,2
+C,1,2,3
+`
+	if string(bts) != expected {
+		t.Fatalf("csv expected %q, got %q", expected, bts)
+	}
+}
+
 func TestNewFromCSV(t *testing.T) {
 	if _, err := NewFromCSV([]string{"second"}, "testdata/bench-01-all-aggregated.csv"); err == nil {
 		t.Fatal("expected error, got nil")
@@ -115,8 +158,8 @@ func TestNewFromCSV(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ac.CountRow() != ac2.CountRow() {
-		t.Fatalf("expected equal %v != %v", ac.CountRow(), ac2.CountRow())
+	if ac.Count() != ac2.Count() {
+		t.Fatalf("expected equal %v != %v", ac.Count(), ac2.Count())
 	}
 
 	fpath := "test.csv"
@@ -151,8 +194,8 @@ func TestNewFromCSV(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if ac.CountRow() != ac2.CountRow() {
-			t.Fatalf("expected equal %v != %v", ac.CountRow(), ac2.CountRow())
+		if ac.Count() != ac2.Count() {
+			t.Fatalf("expected equal %v != %v", ac.Count(), ac2.Count())
 		}
 	}
 }
@@ -195,8 +238,8 @@ func TestNewFromRows(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ac.CountRow() != ac2.CountRow() {
-		t.Fatalf("expected equal %v != %v", ac.CountRow(), ac2.CountRow())
+	if ac.Count() != ac2.Count() {
+		t.Fatalf("expected equal %v != %v", ac.Count(), ac2.Count())
 	}
 }
 
@@ -267,8 +310,8 @@ func TestDataFrameFindFirst(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if col.CountRow() != 362 {
-		t.Fatalf("expected 362, got %d", col.CountRow())
+	if col.Count() != 362 {
+		t.Fatalf("expected 362, got %d", col.Count())
 	}
 	minTS := "1458758226"
 	idx, ok := col.FindFirst(NewStringValue(minTS))
@@ -286,8 +329,8 @@ func TestDataFrameFindFirst(t *testing.T) {
 	if err := col.Deletes(0, 2); err != nil {
 		t.Fatal(err)
 	}
-	if col.CountRow() != 360 {
-		t.Fatalf("expected 360, got %d", col.CountRow())
+	if col.Count() != 360 {
+		t.Fatalf("expected 360, got %d", col.Count())
 	}
 	{
 		idx, ok := col.FindFirst(NewStringValue(minTS))

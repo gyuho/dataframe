@@ -8,11 +8,14 @@ import (
 
 // Column represents column-based data.
 type Column interface {
-	// CountRow returns the number of rows of the Column.
-	CountRow() int
+	// Count returns the number of rows of the Column.
+	Count() int
 
 	// Header returns the header of the Column.
 	Header() string
+
+	// Rows returns all the data in string slice.
+	Rows() []string
 
 	// UpdateHeader updates the header of the Column.
 	UpdateHeader(header string)
@@ -106,7 +109,7 @@ func NewColumn(hd string) Column {
 	}
 }
 
-func (c *column) CountRow() int {
+func (c *column) Count() int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -118,6 +121,18 @@ func (c *column) Header() string {
 	defer c.mu.Unlock()
 
 	return c.header
+}
+
+func (c *column) Rows() (rows []string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	rows = make([]string, len(c.data))
+	for i := range c.data {
+		v, _ := c.data[i].String()
+		rows[i] = v
+	}
+	return
 }
 
 func (c *column) UpdateHeader(header string) {

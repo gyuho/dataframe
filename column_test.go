@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -17,8 +18,8 @@ func TestColumn(t *testing.T) {
 			t.Fatalf("expected %d, got %d", i+1, d)
 		}
 	}
-	if c.CountRow() != 100 {
-		t.Fatalf("expected '100', got %v", c.CountRow())
+	if c.Count() != 100 {
+		t.Fatalf("expected '100', got %v", c.Count())
 	}
 
 	if err := c.Set(10, NewStringValue(10000)); err != nil {
@@ -71,6 +72,30 @@ func TestColumn(t *testing.T) {
 	}
 }
 
+func TestColumnRow(t *testing.T) {
+	c := NewColumn("A")
+	for i := 0; i < 3; i++ {
+		d := c.PushBack(NewStringValue(i))
+		if i+1 != d {
+			t.Fatalf("expected %d, got %d", i+1, d)
+		}
+	}
+	if pv := c.PushFront(NewStringValue("Google")); pv != 4 {
+		t.Fatalf("expected '4', got %v", pv)
+	}
+	if pv := c.PushBack(NewStringValue("Amazon")); pv != 5 {
+		t.Fatalf("expected '5', got %v", pv)
+	}
+	if n := c.Count(); n != 5 {
+		t.Fatalf("c.Count() expected 5, got %d", n)
+	}
+	expected := []string{"Google", "0", "1", "2", "Amazon"}
+	rows := c.Rows()
+	if !reflect.DeepEqual(expected, rows) {
+		t.Fatalf("rows expected %+v, got %+v", expected, rows)
+	}
+}
+
 func TestColumnNonNil(t *testing.T) {
 	c := NewColumn("second")
 	if c.Header() != "second" {
@@ -110,7 +135,7 @@ func TestColumnAppends(t *testing.T) {
 	if err := c.Appends(NewStringValue(1000), 1000); err != nil {
 		t.Fatal(err)
 	}
-	s := c.CountRow()
+	s := c.Count()
 	if s != 1000 {
 		t.Fatalf("expected '1000', got %v", s)
 	}
@@ -139,7 +164,7 @@ func TestColumnAppendsNil(t *testing.T) {
 	if err := c.Appends(NewStringValue(""), 1000); err != nil {
 		t.Fatal(err)
 	}
-	s := c.CountRow()
+	s := c.Count()
 	if s != 1000 {
 		t.Fatalf("expected '1000', got %v", s)
 	}
@@ -172,8 +197,8 @@ func TestColumnDeletes(t *testing.T) {
 	if idx != 50 || !ok {
 		t.Fatalf("expected 50, true, got %d %v", idx, ok)
 	}
-	if c.CountRow() != 80 {
-		t.Fatalf("expected 80, got %d", c.CountRow())
+	if c.Count() != 80 {
+		t.Fatalf("expected 80, got %d", c.Count())
 	}
 	idx, ok = c.FindFirst(NewStringValue(60))
 	if idx != -1 || ok {
@@ -204,8 +229,8 @@ func TestColumnKeep(t *testing.T) {
 	if idx != -1 || ok {
 		t.Fatalf("expected -1, false, got %d %v", idx, ok)
 	}
-	if c.CountRow() != 20 {
-		t.Fatalf("expected 20, got %d", c.CountRow())
+	if c.Count() != 20 {
+		t.Fatalf("expected 20, got %d", c.Count())
 	}
 	idx, ok = c.FindFirst(NewStringValue(90))
 	if idx != -1 || ok {
