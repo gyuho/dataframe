@@ -20,8 +20,8 @@ type Frame interface {
 	// Columns returns all Columns.
 	Columns() []Column
 
-	// CountColumn returns the number of Columns in the Frame.
-	CountColumn() int
+	// Count returns the number of Columns in the Frame.
+	Count() int
 
 	// UpdateHeader updates the header name of a Column.
 	UpdateHeader(origHeader, newHeader string) error
@@ -248,7 +248,7 @@ func (f *frame) Columns() []Column {
 	return f.columns
 }
 
-func (f *frame) CountColumn() int {
+func (f *frame) Count() int {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 

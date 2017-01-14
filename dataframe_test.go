@@ -74,7 +74,7 @@ func TestFrame(t *testing.T) {
 	if ok := fr.DeleteColumn("second1"); !ok {
 		t.Fatalf("expected 'true', got %v", ok)
 	}
-	if cd := fr.CountColumn(); cd != 1 {
+	if cd := fr.Count(); cd != 1 {
 		t.Fatalf("expected 1, got %v", cd)
 	}
 	if ok := fr.DeleteColumn("second1"); ok {
@@ -86,7 +86,7 @@ func TestFrame(t *testing.T) {
 	if ok := fr.DeleteColumn("second2"); !ok {
 		t.Fatalf("expected 'true', got %v", ok)
 	}
-	if cd := fr.CountColumn(); cd != 0 {
+	if cd := fr.Count(); cd != 0 {
 		t.Fatalf("expected 0, got %v", cd)
 	}
 }
