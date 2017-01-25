@@ -469,13 +469,13 @@ func (f *frame) Sort(header string, st SortType, so SortOption) error {
 			lesses = []LessFunc{StringDescendingFunc(idx)}
 		}
 
-	case SortType_Number:
+	case SortType_Float64:
 		switch so {
 		case SortOption_Ascending:
-			lesses = []LessFunc{NumberAscendingFunc(idx)}
+			lesses = []LessFunc{Float64AscendingFunc(idx)}
 
 		case SortOption_Descending:
-			lesses = []LessFunc{NumberDescendingFunc(idx)}
+			lesses = []LessFunc{Float64DescendingFunc(idx)}
 		}
 
 	case SortType_Duration:

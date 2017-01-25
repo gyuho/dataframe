@@ -268,12 +268,12 @@ func TestColumnSortByStringDescending(t *testing.T) {
 	}
 }
 
-func TestColumnSortByNumberAscending(t *testing.T) {
+func TestColumnSortByFloat64Ascending(t *testing.T) {
 	c := NewColumn("column")
 	for i := 0; i < 100; i++ {
 		c.PushBack(NewStringValue(i))
 	}
-	c.SortByNumberAscending()
+	c.SortByFloat64Ascending()
 	fv, err := c.Value(0)
 	if err != nil {
 		t.Fatal(err)
@@ -283,13 +283,13 @@ func TestColumnSortByNumberAscending(t *testing.T) {
 	}
 }
 
-func TestColumnSortByNumberDescending(t *testing.T) {
+func TestColumnSortByFloat64Descending(t *testing.T) {
 	c := NewColumn("column")
 	for i := 0; i < 100; i++ {
 		c.PushBack(NewStringValue(i))
 	}
 	c.PushBack(NewStringValue("199.9"))
-	c.SortByNumberDescending()
+	c.SortByFloat64Descending()
 	fv, err := c.Value(0)
 	if err != nil {
 		t.Fatal(err)

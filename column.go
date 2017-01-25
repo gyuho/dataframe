@@ -80,11 +80,11 @@ type Column interface {
 	// SortByStringDescending sorts Column in string descending order.
 	SortByStringDescending()
 
-	// SortByNumberAscending sorts Column in number(float) ascending order.
-	SortByNumberAscending()
+	// SortByFloat64Ascending sorts Column in number(float) ascending order.
+	SortByFloat64Ascending()
 
-	// SortByNumberDescending sorts Column in number(float) descending order.
-	SortByNumberDescending()
+	// SortByFloat64Descending sorts Column in number(float) descending order.
+	SortByFloat64Descending()
 
 	// SortByDurationAscending sorts Column in time.Duration ascending order.
 	SortByDurationAscending()
@@ -391,7 +391,7 @@ func (c *column) Copy() Column {
 
 func (c *column) SortByStringAscending()    { sort.Sort(ByStringAscending(c.data)) }
 func (c *column) SortByStringDescending()   { sort.Sort(ByStringDescending(c.data)) }
-func (c *column) SortByNumberAscending()    { sort.Sort(ByNumberAscending(c.data)) }
-func (c *column) SortByNumberDescending()   { sort.Sort(ByNumberDescending(c.data)) }
+func (c *column) SortByFloat64Ascending()   { sort.Sort(ByFloat64Ascending(c.data)) }
+func (c *column) SortByFloat64Descending()  { sort.Sort(ByFloat64Descending(c.data)) }
 func (c *column) SortByDurationAscending()  { sort.Sort(ByDurationAscending(c.data)) }
 func (c *column) SortByDurationDescending() { sort.Sort(ByDurationDescending(c.data)) }

@@ -9,12 +9,12 @@ import (
 
 func TestValue(t *testing.T) {
 	v1 := NewStringValue("1")
-	if v, ok := v1.Number(); !ok {
+	if v, ok := v1.Float64(); !ok {
 		t.Fatalf("expected number 1, got %v", v)
 	}
 
 	v2 := NewStringValue("2.2")
-	if v, ok := v2.Number(); !ok || v != 2.2 {
+	if v, ok := v2.Float64(); !ok || v != 2.2 {
 		t.Fatalf("expected number 2.2, got %v", v)
 	}
 
@@ -37,6 +37,24 @@ func TestValue(t *testing.T) {
 
 	if !NewStringValue("hello").EqualTo(NewStringValue("hello")) {
 		t.Fatal("EqualTo expected 'true' for 'hello' == 'hello' but got false")
+	}
+}
+
+func TestValueInt(t *testing.T) {
+	v := NewStringValue("1")
+	fv, ok := v.Float64()
+	if !ok || fv != 1.0 {
+		t.Fatalf("expected number 1, got %f(%v)", fv, v)
+	}
+
+	iv, ok := v.Int64()
+	if !ok || iv != 1 {
+		t.Fatalf("expected number 1, got %d(%v)", iv, v)
+	}
+
+	uv, ok := v.Uint64()
+	if !ok || uv != 1 {
+		t.Fatalf("expected number 1, got %d(%v)", uv, v)
 	}
 }
 
@@ -69,24 +87,24 @@ func TestByStringDescending(t *testing.T) {
 	}
 }
 
-func TestByNumberAscending(t *testing.T) {
+func TestByFloat64Ascending(t *testing.T) {
 	vs := []Value{}
 	for i := 0; i < 100; i++ {
 		vs = append(vs, NewStringValue(fmt.Sprintf("%d", i)))
 	}
-	sort.Sort(ByNumberAscending(vs))
+	sort.Sort(ByFloat64Ascending(vs))
 	if !vs[0].EqualTo(NewStringValue("0")) {
 		t.Fatalf("expected '0', got %v", vs[0])
 	}
 }
 
-func TestByNumberDescending(t *testing.T) {
+func TestByFloat64Descending(t *testing.T) {
 	vs := []Value{}
 	for i := 0; i < 100; i++ {
 		vs = append(vs, NewStringValue(fmt.Sprintf("%d", i)))
 	}
 	vs = append(vs, NewStringValue("199.9"))
-	sort.Sort(ByNumberDescending(vs))
+	sort.Sort(ByFloat64Descending(vs))
 	if !vs[0].EqualTo(NewStringValue("199.9")) {
 		t.Fatalf("expected '199.9', got %v", vs[0])
 	}

@@ -11,8 +11,14 @@ type Value interface {
 	// String parses Value to string. It returns false if not possible.
 	String() (string, bool)
 
-	// Number parses Value to float64. It returns false if not possible.
-	Number() (float64, bool)
+	// Int64 parses Value to int64. It returns false if not possible.
+	Int64() (int64, bool)
+
+	// Uint64 parses Value to uint64. It returns false if not possible.
+	Uint64() (uint64, bool)
+
+	// Float64 parses Value to float64. It returns false if not possible.
+	Float64() (float64, bool)
 
 	// Time parses Value to time.Time based on the layout. It returns false if not possible.
 	Time(layout string) (time.Time, bool)
@@ -30,6 +36,7 @@ type Value interface {
 	Copy() Value
 }
 
+// NewStringValue takes any interface and returns Value.
 func NewStringValue(v interface{}) Value {
 	switch t := v.(type) {
 	case string:
@@ -54,17 +61,29 @@ func NewStringValue(v interface{}) Value {
 	return nil
 }
 
+// NewStringValueNil returns an empty value.
 func NewStringValueNil() Value {
 	return String("")
 }
 
+// String defines string data types.
 type String string
 
 func (s String) String() (string, bool) {
 	return string(s), true
 }
 
-func (s String) Number() (float64, bool) {
+func (s String) Int64() (int64, bool) {
+	iv, err := strconv.ParseInt(string(s), 10, 64)
+	return iv, err == nil
+}
+
+func (s String) Uint64() (uint64, bool) {
+	iv, err := strconv.ParseUint(string(s), 10, 64)
+	return iv, err == nil
+}
+
+func (s String) Float64() (float64, bool) {
 	f, err := strconv.ParseFloat(string(s), 64)
 	return f, err == nil
 }
@@ -124,35 +143,35 @@ func (vs ByStringDescending) Less(i, j int) bool {
 	return vs1 > vs2
 }
 
-type ByNumberAscending []Value
+type ByFloat64Ascending []Value
 
-func (vs ByNumberAscending) Len() int {
+func (vs ByFloat64Ascending) Len() int {
 	return len(vs)
 }
 
-func (vs ByNumberAscending) Swap(i, j int) {
+func (vs ByFloat64Ascending) Swap(i, j int) {
 	vs[i], vs[j] = vs[j], vs[i]
 }
 
-func (vs ByNumberAscending) Less(i, j int) bool {
-	vs1, _ := vs[i].Number()
-	vs2, _ := vs[j].Number()
+func (vs ByFloat64Ascending) Less(i, j int) bool {
+	vs1, _ := vs[i].Float64()
+	vs2, _ := vs[j].Float64()
 	return vs1 < vs2
 }
 
-type ByNumberDescending []Value
+type ByFloat64Descending []Value
 
-func (vs ByNumberDescending) Len() int {
+func (vs ByFloat64Descending) Len() int {
 	return len(vs)
 }
 
-func (vs ByNumberDescending) Swap(i, j int) {
+func (vs ByFloat64Descending) Swap(i, j int) {
 	vs[i], vs[j] = vs[j], vs[i]
 }
 
-func (vs ByNumberDescending) Less(i, j int) bool {
-	vs1, _ := vs[i].Number()
-	vs2, _ := vs[j].Number()
+func (vs ByFloat64Descending) Less(i, j int) bool {
+	vs1, _ := vs[i].Float64()
+	vs2, _ := vs[j].Float64()
 	return vs1 > vs2
 }
 

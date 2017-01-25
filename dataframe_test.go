@@ -418,7 +418,7 @@ func TestSort(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := fr.Sort("second", SortType_Number, SortOption_Descending); err != nil {
+	if err := fr.Sort("second", SortType_Float64, SortOption_Descending); err != nil {
 		t.Fatal(err)
 	}
 	fpath := "test.csv"

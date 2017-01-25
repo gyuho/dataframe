@@ -13,7 +13,7 @@ type (
 
 const (
 	SortType_String SortType = iota
-	SortType_Number
+	SortType_Float64
 	SortType_Duration
 )
 
@@ -45,7 +45,7 @@ func StringDescendingFunc(idx int) func(row1, row2 *[]string) bool {
 	}
 }
 
-func NumberAscendingFunc(idx int) func(row1, row2 *[]string) bool {
+func Float64AscendingFunc(idx int) func(row1, row2 *[]string) bool {
 	return func(row1, row2 *[]string) bool {
 		v1s := (*row1)[idx]
 		v1, _ := strconv.ParseFloat(v1s, 64)
@@ -55,7 +55,7 @@ func NumberAscendingFunc(idx int) func(row1, row2 *[]string) bool {
 	}
 }
 
-func NumberDescendingFunc(idx int) func(row1, row2 *[]string) bool {
+func Float64DescendingFunc(idx int) func(row1, row2 *[]string) bool {
 	return func(row1, row2 *[]string) bool {
 		v1s := (*row1)[idx]
 		v1, _ := strconv.ParseFloat(v1s, 64)
