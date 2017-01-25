@@ -36,6 +36,12 @@ func NewStringValue(v interface{}) Value {
 		return String(t)
 	case int:
 		return String(strconv.FormatInt(int64(t), 10))
+	case int64:
+		return String(strconv.FormatInt(t, 10))
+	case uint:
+		return String(strconv.FormatUint(uint64(t), 10))
+	case uint64:
+		return String(strconv.FormatUint(t, 10))
 	case float64:
 		return String(strconv.FormatFloat(t, 'f', -1, 64))
 	case time.Time:
@@ -43,7 +49,7 @@ func NewStringValue(v interface{}) Value {
 	case time.Duration:
 		return String(t.String())
 	default:
-		panic(fmt.Errorf("%v is not supported", v))
+		panic(fmt.Errorf("%v(%T) is not supported", v, v))
 	}
 	return nil
 }
