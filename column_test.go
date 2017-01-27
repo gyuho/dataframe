@@ -72,6 +72,22 @@ func TestColumn(t *testing.T) {
 	}
 }
 
+func TestColumnTyped(t *testing.T) {
+	col := NewColumnTyped("TIME", TIME)
+	size, err := col.PushFrontTyped(time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if size != 1 {
+		t.Fatalf("size expected 1, got %d", size)
+	}
+	_, err = col.PushFrontTyped("a")
+	fmt.Println(err)
+	if err == nil {
+		t.Fatalf("error expected, gut got error %v", err)
+	}
+}
+
 func TestColumnRow(t *testing.T) {
 	c := NewColumn("A")
 	for i := 0; i < 3; i++ {
