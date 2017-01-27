@@ -502,6 +502,8 @@ func (f *frame) Sort(header string, st SortType, so SortOption) error {
 	if !ok {
 		return fmt.Errorf("cannot type assert on frame")
 	}
-	*f = *v
+	// *f = *v
+	f.columns = v.columns
+	f.headerTo = v.headerTo
 	return nil
 }

@@ -7,64 +7,6 @@ import (
 	"time"
 )
 
-func TestValue(t *testing.T) {
-	v1 := NewStringValue("1")
-	if v, ok := v1.Float64(); !ok {
-		t.Fatalf("expected number 1, got %v", v)
-	}
-
-	v2 := NewStringValue("2.2")
-	if v, ok := v2.Float64(); !ok || v != 2.2 {
-		t.Fatalf("expected number 2.2, got %v", v)
-	}
-
-	v2c := v2.Copy()
-	if !v2.EqualTo(v2c) {
-		t.Fatalf("expected equal, got %v", v2.EqualTo(v2c))
-	}
-
-	v3t := time.Now().String()
-	v3 := NewStringValue(v3t)
-	if v, ok := v3.Time("2006-01-02 15:04:05 -0700 MST"); !ok {
-		t.Fatalf("expected time %s, got %v", v3t, v)
-	}
-
-	v4t := time.Now().String()[:19]
-	v4 := NewStringValue(v4t)
-	if v, ok := v4.Time("2006-01-02 15:04:05"); !ok {
-		t.Fatalf("expected time %s, got %v", v4t, v)
-	}
-
-	if !NewStringValue("hello").EqualTo(NewStringValue("hello")) {
-		t.Fatal("EqualTo expected 'true' for 'hello' == 'hello' but got false")
-	}
-}
-
-func TestValueInt(t *testing.T) {
-	v := NewStringValue("1")
-	fv, ok := v.Float64()
-	if !ok || fv != 1.0 {
-		t.Fatalf("expected number 1, got %f(%v)", fv, v)
-	}
-
-	iv, ok := v.Int64()
-	if !ok || iv != 1 {
-		t.Fatalf("expected number 1, got %d(%v)", iv, v)
-	}
-
-	uv, ok := v.Uint64()
-	if !ok || uv != 1 {
-		t.Fatalf("expected number 1, got %d(%v)", uv, v)
-	}
-}
-
-func TestNewStringValueNil(t *testing.T) {
-	v := NewStringValueNil()
-	if !v.IsNil() {
-		t.Fatalf("expected nil, got %v", v)
-	}
-}
-
 func TestByStringAscending(t *testing.T) {
 	vs := []Value{}
 	for i := 0; i < 100; i++ {
@@ -83,6 +25,32 @@ func TestByStringDescending(t *testing.T) {
 	}
 	sort.Sort(ByStringDescending(vs))
 	if !vs[0].EqualTo(NewStringValue("99")) {
+		t.Fatalf("expected '99', got %v", vs[0])
+	}
+}
+
+func TestByStringDescendingTime(t *testing.T) {
+	now := time.Now()
+	vs := []Value{}
+	for i := 0; i < 100; i++ {
+		t := now.Add(time.Duration(i) * time.Second).String()
+		vs = append(vs, NewStringValue(t))
+	}
+	sort.Sort(ByStringDescending(vs))
+	if !vs[0].EqualTo(NewStringValue(now.Add(time.Duration(99) * time.Second).String())) {
+		t.Fatalf("expected '99', got %v", vs[0])
+	}
+}
+
+func TestByStringDescendingTimeColumn(t *testing.T) {
+	now := time.Now()
+	vs := []Value{}
+	for i := 0; i < 100; i++ {
+		t := now.Add(time.Duration(i) * time.Second)
+		vs = append(vs, NewTimeValue(t))
+	}
+	sort.Sort(ByStringDescending(vs))
+	if !vs[0].EqualTo(NewTimeValue(now.Add(time.Duration(99) * time.Second))) {
 		t.Fatalf("expected '99', got %v", vs[0])
 	}
 }
