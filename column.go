@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 )
 
 // Column represents column-based data.
@@ -16,6 +17,18 @@ type Column interface {
 
 	// Rows returns all the data in string slice.
 	Rows() []string
+
+	// Uint64s returns all the data in int64 slice.
+	Uint64s() ([]uint64, bool)
+
+	// Int64s returns all the data in int64 slice.
+	Int64s() ([]int64, bool)
+
+	// Float64s returns all the data in float64 slice.
+	Float64s() ([]float64, bool)
+
+	// Times returns all the data in time.Time slice.
+	Times(layout string) ([]time.Time, bool)
 
 	// UpdateHeader updates the header of the Column.
 	UpdateHeader(header string)
@@ -154,6 +167,70 @@ func (c *column) Rows() (rows []string) {
 	rows = make([]string, len(c.data))
 	for i := range c.data {
 		v, _ := c.data[i].String()
+		rows[i] = v
+	}
+	return
+}
+
+func (c *column) Uint64s() (rows []uint64, ok bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	rows = make([]uint64, len(c.data))
+	for i := range c.data {
+		var v uint64
+		v, ok = c.data[i].Uint64()
+		if !ok {
+			break
+		}
+		rows[i] = v
+	}
+	return
+}
+
+func (c *column) Int64s() (rows []int64, ok bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	rows = make([]int64, len(c.data))
+	for i := range c.data {
+		var v int64
+		v, ok = c.data[i].Int64()
+		if !ok {
+			break
+		}
+		rows[i] = v
+	}
+	return
+}
+
+func (c *column) Float64s() (rows []float64, ok bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	rows = make([]float64, len(c.data))
+	for i := range c.data {
+		var v float64
+		v, ok = c.data[i].Float64()
+		if !ok {
+			break
+		}
+		rows[i] = v
+	}
+	return
+}
+
+func (c *column) Times(layout string) (rows []time.Time, ok bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	rows = make([]time.Time, len(c.data))
+	for i := range c.data {
+		var v time.Time
+		v, ok = c.data[i].Time(layout)
+		if !ok {
+			break
+		}
 		rows[i] = v
 	}
 	return

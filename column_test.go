@@ -112,6 +112,46 @@ func TestColumnRow(t *testing.T) {
 	}
 }
 
+func TestColumnRowInt64s(t *testing.T) {
+	c := NewColumn("A")
+	expected := []int64{100, 50, 7, 10, 5}
+	for i, v := range expected {
+		if pv := c.PushBack(NewStringValue(v)); pv != i+1 {
+			t.Fatalf("expected '%d', got %v", i+1, pv)
+		}
+	}
+	if n := c.Count(); n != len(expected) {
+		t.Fatalf("c.Count() expected %d, got %d", len(expected), n)
+	}
+	rows, ok := c.Int64s()
+	if !ok {
+		t.Fatalf("ok expected true, got %v", ok)
+	}
+	if !reflect.DeepEqual(expected, rows) {
+		t.Fatalf("rows expected %+v, got %+v", expected, rows)
+	}
+}
+
+func TestColumnRowFloat64s(t *testing.T) {
+	c := NewColumn("A")
+	expected := []float64{10.01, 5.05, 1.7, 8, 111101, 5.5, 7, 10}
+	for i, v := range expected {
+		if pv := c.PushBack(NewStringValue(v)); pv != i+1 {
+			t.Fatalf("expected '%d', got %v", i+1, pv)
+		}
+	}
+	if n := c.Count(); n != len(expected) {
+		t.Fatalf("c.Count() expected %d, got %d", len(expected), n)
+	}
+	rows, ok := c.Float64s()
+	if !ok {
+		t.Fatalf("ok expected true, got %v", ok)
+	}
+	if !reflect.DeepEqual(expected, rows) {
+		t.Fatalf("rows expected %+v, got %+v", expected, rows)
+	}
+}
+
 func TestColumnNonNil(t *testing.T) {
 	c := NewColumn("second")
 	if c.Header() != "second" {
