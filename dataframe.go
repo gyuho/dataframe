@@ -62,6 +62,8 @@ func New() Frame {
 }
 
 // NewFromRows creates Frame from rows.
+// Pass 'nil' header if first row is used as header strings.
+// Pass 'non-nil' header if the data starts from the first row, without header strings.
 func NewFromRows(header []string, rows [][]string) (Frame, error) {
 	if len(rows) < 1 {
 		return nil, fmt.Errorf("empty row %q", rows)
@@ -129,6 +131,8 @@ func NewFromRows(header []string, rows [][]string) (Frame, error) {
 }
 
 // NewFromCSV creates a new Frame from CSV.
+// Pass 'nil' header if first row is used as header strings.
+// Pass 'non-nil' header if the data starts from the first row, without header strings.
 func NewFromCSV(header []string, fpath string) (Frame, error) {
 	f, err := openToRead(fpath)
 	if err != nil {
